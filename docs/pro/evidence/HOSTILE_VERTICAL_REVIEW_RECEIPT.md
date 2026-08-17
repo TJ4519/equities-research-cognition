@@ -14,7 +14,7 @@ No severity-one or severity-two architecture defect remains blocking only under 
 
 The review ran on branch `agent/hostile-vertical-review` at exact base `263d7ad146a511482b6de1e0f3cd167b49593270`. That commit descends from the packet lineage recorded on the branch. The tree was clean before review. The only later repository change made by this reviewer is this receipt.
 
-Substantive review commit: recorded by the metadata follow-up commit.
+Substantive review commit: `78837d18be3ff2d9a2ffe29ad0da558ba8f3c3d4`.
 
 Result commit: returned to the coordinating context after the follow-up commit; a Git commit cannot contain its own identifier.
 
