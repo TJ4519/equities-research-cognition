@@ -1,343 +1,253 @@
 # Current Semantic Checkpoint
 
-The project is now organised around a continuing company research environment with a specialised model-change workspace, while all pre-architecture worker packets and backend-first build slices are suspended pending hostile review of one outcome-complete vertical.
+The programme is now in active end-to-end delivery: the user-authorised commission supersedes the passive Level-1 freeze, and Milestone 1 independent hostile vertical adjudication is the active work.
 
-Status: active reconstitution point after the user-directed product-system re-commission and autonomous-owner reconciliation on 17 August 2026. Git and executable code remain authoritative. This checkpoint records product and build authority; it is not an implementation claim.
+Status: `CONTINUING`.
+
+Checkpoint date: 17 August 2026.
+
+This checkpoint is a translating projection. Git and executable code govern what exists; governing product contracts and the decision ledger govern product and delivery authority.
 
 ## Exact repository basis
 
 - Repository: `TJ4519/equities-research-cognition`
 - Governing handoff branch: `agent/pro-responsibility-handoff`
-- Verified governing commit: `c1fc568424facbb5bb8e1b6369d30a1f380ae308`
-- PRO working branch: `agent/pro-grounding`
-- Workbook worker result: `101b83272a473598069d4e14c02552cf48982c56`
-- Workbook reconciliation merge: `3dc187ff47ba0d75eabf54be527bb527d049183f`
-- Parent used for this checkpoint reconciliation: `a27b5a3a0b91320627d89f5597c897378fe1e438`
+- Verified handoff commit: `c1fc568424facbb5bb8e1b6369d30a1f380ae308`
+- PRO branch: `agent/pro-grounding`
+- Previous passive checkpoint: `03dab0a2363a6fc8bd7b6b9a490738e902cd7c9f`
+- Delivery-authority ledger commit preceding this checkpoint: `3fcb365793d6294c98927859e19c84e9d3c8d55c`
+- Active review branch: `agent/hostile-vertical-review`
+- Review packet commit before final checkpoint fast-forward: `b4b8828fdcd19478d24ceaae284865af49fa197c`
+- Active coordinating issue: GitHub issue `#4`
+- Historical workbook worker result: `101b83272a473598069d4e14c02552cf48982c56`
+- Historical workbook reconciliation merge: `3dc187ff47ba0d75eabf54be527bb527d049183f`
 
-No product model, route, service, prompt, runtime, source policy, or analyst-facing template changed during the product-system re-commission. The new commits are durable architecture, ownership, and governance artifacts only.
+No product code, migration, route, prompt, runtime, source policy or analyst-facing template changed during authority reconciliation. The new commits establish delivery authority, a hostile-review contract and an active review packet.
 
-## Read order
+## Governing read order
 
-After verifying the branch and current commit, read:
+A fresh autonomous owner or reviewer must:
 
-1. `docs/pro/PRO_CONSTITUTION.md`
-2. `docs/pro/AUTONOMOUS_PRODUCT_OWNER_CHARTER.md`
-3. `docs/pro/PRODUCT_SYSTEM_ARCHITECTURE_V0.md`
-4. `docs/pro/PROFESSIONAL_INTERACTION_AND_STATE_CONTRACT_V0.md`
-5. `docs/pro/CONCEPTUAL_MODEL_CONTRACT_V0.md`
-6. `docs/pro/EVALUATION_AND_HARNESS_EVOLUTION_CONTRACT_V0.md`
-7. `docs/pro/UI_AND_REPOSITORY_SLOP_AUDIT.md`
-8. `docs/pro/DECISION_LEDGER.jsonl`
-9. `docs/pro/COUNTEREXAMPLE_REGISTER.md`
-10. `docs/pro/REPOSITORY_GROUND.md` and `docs/pro/PROMPT_AND_HARNESS_AUDIT.md`, reconciled against current code
-11. a worker packet only when this checkpoint and a later ledger entry name it as active
+1. verify branch, commit and divergence;
+2. read root and package `AGENTS.md` and `ROUTE.md`;
+3. read `PRO_RESPONSIBILITY_PROMPT.md`;
+4. read `docs/pro/PRO_CONSTITUTION.md`;
+5. read `docs/pro/END_TO_END_DELIVERY_COMMISSION.md`;
+6. read `docs/pro/AUTONOMOUS_PRODUCT_OWNER_CHARTER.md`;
+7. read `docs/pro/AUTONOMOUS_PRODUCT_OWNER_CHARTER_AMENDMENT_001.md`;
+8. read `docs/pro/PRODUCT_SYSTEM_ARCHITECTURE_V0.md`;
+9. read `docs/pro/PROFESSIONAL_INTERACTION_AND_STATE_CONTRACT_V0.md`;
+10. read `docs/pro/CONCEPTUAL_MODEL_CONTRACT_V0.md`;
+11. read `docs/pro/EVALUATION_AND_HARNESS_EVOLUTION_CONTRACT_V0.md`;
+12. read `docs/pro/UI_AND_REPOSITORY_SLOP_AUDIT.md`;
+13. read the latest entries in `docs/pro/DECISION_LEDGER.jsonl` and `docs/pro/COUNTEREXAMPLE_REGISTER.md`;
+14. read this checkpoint as a projection;
+15. inspect `REPOSITORY_GROUND.md`, `PROMPT_AND_HARNESS_AUDIT.md` and current code for the active question; and
+16. read a worker packet only when this checkpoint and the ledger name it as active.
 
-Do not reconstruct the project from an earlier conversation summary, the current UI, or a stale packet.
+When a translating artifact conflicts with current code or a governing surface, stop and reconcile before delegation.
 
 ## Completion object
 
-A usable product must join this ordinary professional path:
+Deliver an independently verified runnable V0 in which one user can:
 
 ```text
-login and tenant-correct resumption
--> state or resume one consequential company job
--> ingest or select the exact native artifact
--> recover one bounded professional object
--> confirm or correct meaning and method
--> capture exact lawful evidence and entitlement
--> authorise one bounded professional undertaking
--> run real NTM/Codex work under exact cognition and tool versions
--> contain a plausible invalid proposal before propagation
--> present one material exception in ordinary analyst language
--> apply an attributed correction
--> create and calculate an exact candidate descendant
--> expose every displayed consequence from canonical state
--> record exact permission to rely, rejection, or rework for one named use
--> recover the same state after restart
--> turn the exact correction into a protected improvement experiment
+authenticate
+-> begin or resume one recognisable company modelling job
+-> provide or select an exact native model artifact
+-> inspect and correct the system's bounded understanding of one consequential object
+-> authorise one professional undertaking
+-> run real NTM/Codex work over exact evidence
+-> contain a plausible invalid proposal before artifact mutation
+-> understand the exception in ordinary professional language
+-> correct, reject or redirect it
+-> receive an exact recalculated candidate with declared consequences
+-> permit or refuse one named synthetic use
+-> resume the chronology after restart
+-> turn the correction into a protected evaluation and reversible workflow candidate
 ```
 
-A report, static mock-up, raw candidate JSON, simulated spreadsheet review, externally attached workbook, completed document set, green tests, or isolated mechanism does not complete the product.
+A document set, mock-up, isolated mechanism, green suite, manually attached artifact, trace or internal agent approval is not product completion.
 
-## Business and product centre
+The first autonomous delivery checkpoint is `VERIFIED_V0_READY_FOR_COLD_TEST`. It remains short of analyst validation, client readiness and production readiness.
 
-Useful agent-assisted analyst methods invite more frequent use, more companies, more sources, more transformations, and more downstream consumers. Plausible local mistakes can therefore propagate farther, while exhaustive manual reconstruction erases the leverage.
+## Product centre
 
-The business opportunity is to shorten the path from evidence to a relied-upon professional artifact while preserving exact support, economic meaning, method, assumptions, downstream consequences, correction, recalculation, named permission to rely, and protected reversible improvement.
+The mature direction remains a continuing company, security or mandate environment with specialised workspaces. The first falsifiable product is a specialised model-change workspace.
 
-The mature direction is a continuing company, security, or mandate environment with specialised workspaces appearing when the work requires them. The next product falsification is a specialised model-change workspace using a native spreadsheet as its first artifact adapter.
+Excel is the first native artifact adapter, not the product ontology, permanent shell or conceptual model.
 
-Excel is not the product. A standalone Excel companion is no longer the controlling form. It remains a possible adapter and interaction boundary.
+The product value is a shorter path from evidence to a relied-upon professional artifact while preserving exact support, meaning, method, assumptions, downstream consequences, correction, recalculation and scoped authority.
 
 ## Professional interaction grammar
 
-The primary analyst acts are:
+The primary acts remain:
 
-1. begin or resume company work;
-2. confirm or correct the system's bounded understanding;
-3. authorise one exact professional consequence;
-4. resolve a material exception;
-5. review a candidate artifact and what depends on it;
-6. amend, reject, or permit use for a named purpose; and
-7. resume the work and allow exact corrections to seed later evaluation.
+1. begin or resume work;
+2. confirm or correct bounded meaning;
+3. authorise method where material;
+4. run one professional undertaking;
+5. resolve a material exception;
+6. review a candidate artifact;
+7. amend, reject, request rework or exercise a scoped synthetic use transition; and
+8. resume history and seed protected evaluation.
 
-The host quietly handles readiness, dispatch, completion, collection, calculation, trace correlation, and retries unless failure changes what the analyst can do or trust.
+Runtime readiness, dispatch, completion, collection, retries and trace correlation remain quiet unless failure changes what the user can do or trust.
 
-`Confirm meaning`, `Authorise method`, `Run this work`, `Use candidate`, `Reject`, and `Request rework` are distinct authorities. A generic `Approve` or `Accepted` state cannot stand in for them.
+`Confirm meaning`, `Authorise method`, `Run work`, `Use candidate`, `Reject` and `Request rework` remain distinct authorities.
 
-## Joined system architecture
+## Current implementation truth
 
-### Professional job
-
-- tenant and membership;
-- continuing `ResearchJob`;
-- versioned objective and named use;
-- immutable `WorkEpisode` inside the continuing job.
-
-Current `ResearchCampaign` contains useful facts but overloads job and episode semantics.
-
-### Conceptual model and authority
-
-- exact artifact binding and dependency closure;
-- economic meaning;
-- method and assumptions;
-- attributed meaning and method dispositions;
-- exact candidate-use disposition.
-
-The conceptual contract is committed but unimplemented.
-
-### Evidence and entitlement
-
-- host-captured source versions;
-- exact assertions;
-- lawful access receipts;
-- target-specific source and authority policy;
-- deterministic admission, unsupported state, and judgment-required state.
-
-Uploaded bytes exist. Machine-owned source semantics and entitlement do not.
-
-### Work and cognition
-
-- conditional planning;
-- bounded work-unit specification;
-- exact prompt, role, skill, workbench, model, tool, and context package;
-- NTM/Codex execution episode;
-- typed proposal referencing only host-issued identities;
-- fresh challenge only when a named defect earns it.
-
-The current work-order and custody spine is retained. Arbitrary candidate JSON, universal planning, and mandatory reasoning operators are not.
-
-### Native artifact and correction
-
-- immutable original and candidate versions;
-- allowed operation;
-- calculation receipt;
-- attributed amendment;
-- descendant invalidation;
-- new candidate and use decision after every material change.
-
-Only a bounded LibreOfficeDev proxy capability has been demonstrated outside the product path.
-
-### Evaluation and harness evolution
-
-- exact correction record;
-- causal failure attribution;
-- versioned intervention candidate;
-- protected trigger and held-out cases;
-- controlled evaluation;
-- review-cost and regression check;
-- scoped promotion and executable rollback;
-- exact harness release join.
-
-The review product has fragments but not this joined system.
-
-## Product-form ruling
-
-### First falsification
-
-A specialised model-change workspace inside the continuing job. It begins before patching by showing the system's proposed understanding of one model object and obtaining attributed confirmation before a proposal can acquire authority.
-
-### Mature direction
-
-A continuing company research environment with specialised model, earnings, assumption, source-comparison, or thesis workspaces appearing contextually.
-
-### Demoted forms
-
-- standalone artifact-native Excel companion as the product centre;
-- generic campaign or durable-job dashboard;
-- integrated spreadsheet replacement before evidence;
-- provenance dashboard;
-- visible multi-agent system; and
-- inherited Casebook.
-
-## Negative product decisions
-
-The following are rejected as organising forms unless later analyst evidence reverses the decision:
-
-- default SaaS dashboard;
-- permanent sidebar of backend modules;
-- campaign administration;
-- card-grid state display;
-- pipeline visualisation;
-- multi-agent panes;
-- generic activity feed;
-- provenance console as primary safety mechanism;
-- raw JSON candidate display;
-- generic approval status;
-- agent-watching product story;
-- institutional-memory page before exact professional history exists; and
-- backend object implementation without its exact professional interaction and artifact consequence.
-
-The current `index.html`, `job.html`, and `casebook.html` remain useful negative evidence and internal custody views. Cleaner styling would preserve the wrong product.
-
-## Prompt and harness disposition
-
-### Preserve
-
-- exact work-order packet and required reads;
-- candidate-or-refusal default;
-- output attestation;
-- decision hinge, rivals, discriminators, stopping and refusal;
-- research cutoff, uncertainty, alternatives, and claim restraint;
-- no silent repair in adversarial review;
-- no claim strengthening in synthesis;
-- machine judgment is not expert judgment;
-- cognition package identity and external skill locking.
-
-### Amend when host prerequisites exist
-
-- `bound_work` must return typed proposals referencing host object, source assertion, method, and artifact identities;
-- closed work must disable search or capture external retrieval before support;
-- `research_worker` must consume host-issued source facts and allow zero reasoning operators;
-- planner becomes conditional rather than universal;
-- adversarial review receives typed object and consequence transitions;
-- synthesis becomes conditional and artifact-producing where required.
-
-### Demote or keep dormant
-
-- machine judgment becomes an evaluation sidecar;
-- the dormant DeepResearch suite remains a candidate treatment surface rather than a bundle activation;
-- workbenches remain candidate domain operations until complete typed inputs and validators support their strongest states;
-- Research Frame and Modes of Reasoning require isolated causal evaluation rather than ceremonial invocation.
-
-The prompt audit remains controlling: host-owned semantic defects are not solved with better prose.
-
-## Evaluation and learning rule
-
-The live harness cannot change from raw feedback, trace volume, model agreement, or one successful case.
-
-```text
-exact current artifact correction
--> failure attribution to intent, representation, source, validator, adapter, prompt, skill, tool, topology, procedure, model, or interaction
--> quarantined candidate version
--> trigger plus protected held-out evaluation
--> false-admission, false-block, artifact-integrity, review-burden, cost and latency comparison
--> scoped promotion or rollback
-```
-
-The model may propose attribution or intervention. It cannot approve its own change. The current professional artifact must be corrected independently of the later harness experiment.
-
-## Current implemented substrate
+Implemented substrate:
 
 - authenticated owner-scoped jobs;
 - exact input bytes and digests;
 - immutable run specifications and proposals;
-- dispositions before work-order creation;
-- exact cognition and input packet derivation;
+- proposal disposition before work-order creation;
+- exact work-order packets and cognition version checks;
 - allowlisted NTM/Codex lifecycle;
 - tracked dispatch and observed completion;
-- sealed output and byte attestation;
+- sealed output and attestation;
 - provisional candidate or refusal custody;
 - accepted-state continuation and planner re-entry;
 - restart retrieval; and
-- post-custody Langfuse correlation.
+- post-custody Langfuse diagnostic correlation.
 
-## Historical mechanism evidence
+Mechanically demonstrated outside the ordinary product path:
 
-### Worker Packet 001
+- bounded synthetic OOXML target inspection and patch;
+- formula, target, format and style-semantic preservation;
+- real LibreOfficeDev recalculation in one worker environment;
+- repeatable semantic output; and
+- invalid-formula detection.
 
-Closed and retained as historical proof.
+Missing:
 
-It demonstrated a bounded synthetic OOXML patch, formula and target preservation, real LibreOfficeDev recalculation, repeatable semantic results, and visible invalid-formula error. The repository classifier still treats the authorised binary fixture as UTF-8. LibreOfficeDev remains proxy evidence, not a selected production engine.
+- continuing job versus immutable episode semantics;
+- product-level artifact manifest and dependency closure;
+- conceptual object recovery and separate meaning/method/use authority;
+- host-captured source versions, assertions and entitlement;
+- typed proposals referencing host-issued identities;
+- deterministic source-to-target admission;
+- candidate native artifact and calculation receipt;
+- exact amendment, invalidation and recomputation;
+- exception-focused analyst workspace;
+- scoped professional-use mechanics;
+- correction-to-evaluation runner, promotion and rollback; and
+- one joined end-to-end product vertical.
 
-### Worker Packet 002
+## Authority activation
 
-Suspended. Its real-surface-first objective remains relevant, but its branch basis and read order predate the joined architecture and autonomous-owner charter. It may be recompiled only when a current adapter or vertical decision needs the evidence. No Excel-for-the-Web execution is active.
+The user has granted maximum practical authority for reversible product delivery in the public repository and isolated synthetic test environments.
 
-### Worker Packet 003
+The owner may progress from one verified milestone to the next without routine approval, including commissioning review, implementation and verification; creating branches and fixtures; revising code, prompts, skills and interfaces; and internally promoting verified experimental changes within public and synthetic scope.
 
-Suspended repository-hygiene task. The classifier repair remains technically justified but is not a product gate and may not execute automatically.
+This grant does not itself prove Level 2 or Level 3 capability. The independent review gate must first accept or repair one outcome-complete vertical.
 
-### Prior build contract
+Human-only authority remains required for:
 
-`MU-MODEL-UPDATE-V0` and Amendment 001 are suspended as the active sequence and retained as historical proof. Their Micron counterexample, source distinction, workbook evidence, and nonclaims remain useful. Their backend-first Slice 1 order is superseded.
+- protected or client data;
+- permanent credentials, account administration and API consent;
+- material expenditure or contractual commitment;
+- analyst or client contact;
+- external production release;
+- legal, regulatory, publication or investment judgment;
+- professional permission to rely on an artifact; and
+- production-tenant harness promotion.
 
-## Revised build sequence
+## Active Milestone 1 work
 
-Future construction, if explicitly authorised, should arrive as outcome-complete verticals:
+### Contract
 
-### Vertical A — Understand and confirm one object
+`docs/pro/HOSTILE_VERTICAL_REVIEW_CONTRACT_V0.md`
 
-Exact artifact inspection, proposed bounded meaning and method, attributed correction, and canonical state. No mutation.
+### Packet
 
-### Vertical B — Contain one wrong proposal
+`docs/pro/worker-packets/004_HOSTILE_VERTICAL_REVIEW.md`
 
-Exact source capture, real Codex work, deterministic block before mutation, and ordinary-language exception.
+### Branch
 
-### Vertical C — Correct, calculate and permit use
+`agent/hostile-vertical-review`
 
-Attributed amendment, candidate artifact, calculation receipt, consequences, and exact use decision.
+### Coordination
 
-### Vertical D — Evaluate one workflow correction
+GitHub issue `#4`: `Execute Milestone 1 independent hostile vertical review`.
 
-Anchored correction, failure attribution, candidate intervention, protected comparison, and scoped promotion or rollback.
+### Reviewer authority
 
-These verticals are architecture, not current implementation authority.
+One fresh reviewer owns evidence only. It may create:
 
-## Current authority and autonomy
+- `docs/pro/evidence/HOSTILE_VERTICAL_REVIEW_RECEIPT.md`; and
+- optional sanitised evidence under `docs/pro/evidence/hostile-vertical-review/`.
 
-Current autonomy level: **Level 1 — architecture ownership**.
+It may not edit governing contracts, product code, migrations, prompts, routes, templates or tests.
 
-No product implementation, adapter assumption test, repository-hygiene packet, prompt revision, source model, conceptual-object model, runtime integration, evaluation runner, or UI packet is active.
+### Required verdict
 
-A joined vertical contract must first survive independent hostile review. Level 2 bounded vertical orchestration requires an accepted outcome-complete contract, stable interfaces, fresh-context reconstitution, hostile review, and no user relay.
+- `ACCEPT_WITH_EXACT_NARROWING`;
+- `REVISE_AND_REVIEW_AGAIN`; or
+- `KILL_OR_REPLACE_CURRENT_VERTICAL`.
 
-Human-only authority remains required for protected data, credentials, API consent, account administration, expenditure, analyst contact, production deployment, external release, professional permission to rely, and tenant-scope harness promotion.
+### Review cases
 
-## Hostile review gate
+- Micron existing reported-value update with equal-value/wrong-source containment;
+- a materially different analyst assumption or adjustment; and
+- an earnings-derived structural addition with no pre-existing stable target.
 
-The next lawful product action is an independent hostile review of the joined contracts against:
+The review also attacks migration and runtime constraints, adapter uncertainty, analyst burden, restart, stale descendants and rollback.
 
-- the Micron existing-model update;
-- one model adjustment or analyst-assumption change;
-- one earnings-derived or structural addition;
-- current repository migrations and lifecycle constraints;
-- direct native-tool and proxy adapter questions that materially affect the vertical;
-- expected analyst confirmation and review burden; and
-- rollback and stale-packet behaviour.
+### Exit evidence
 
-The review must either clear one outcome-complete vertical contract, require revisions, or kill the current form. Only a later ledger entry may activate a recompiled adapter test or implementation packet.
+One accepted outcome-complete vertical contract with falsifiers, stable interfaces, minimum additive migration boundary and rollback—or an explicit repair or kill decision.
+
+## Packet disposition
+
+- Packet 001: closed historical proof.
+- Packet 002: suspended and stale; real-surface objective retained.
+- Packet 003: suspended repository hygiene; not a product gate.
+- Packet 004: active independent hostile review.
+- `MU-MODEL-UPDATE-V0` and Amendment 001: historical proof, not active build sequence.
+
+No older packet becomes active automatically.
+
+## Continuation rule
+
+After the reviewer returns, PRO must inspect the exact diff and receipt and then:
+
+- accept an exactly narrowed vertical and activate Level 2;
+- enter `REPAIRING`, revise the joined contract and commission one bounded re-review; or
+- kill or replace the current vertical and test the strongest rival.
+
+The owner must not turn review into an indefinite documentation phase. Once the gate closes, the first outcome-complete implementation packet is compiled and handed directly to coordinating Codex without routine user reapproval.
 
 ## Evidence ceiling
 
-The repository has a credible exact-job, runtime, and artifact-custody kernel; a bounded spreadsheet proxy experiment; a committed conceptual-model contract; a joined product, interaction, evaluation, and negative-product architecture; and an autonomous-owner charter.
+The repository now contains:
 
-It does not establish:
+- a credible exact-job, runtime and artifact-custody kernel;
+- bounded historical spreadsheet mechanism evidence;
+- a conceptual model contract;
+- joined product, interaction, evaluation and negative-product contracts;
+- an autonomous owner charter;
+- an activated end-to-end delivery commission; and
+- an independently scoped hostile-review packet.
 
+It does not yet establish:
+
+- a hostile-review verdict;
+- Level 2 or Level 3 earned delivery capability;
 - an implemented product system;
-- delivery autonomy beyond architecture ownership;
 - analyst usefulness or validation;
-- typical sell-side workbook support;
-- direct Excel round-trip or commercial integration;
-- accurate conceptual-model recovery;
-- source admission;
-- corrected product-generated candidate artifact;
-- exact permission to rely;
-- protected evaluation or harness promotion; or
-- product fit, deployment, research quality, or cumulative improvement.
+- direct Excel integration or typical workbook support;
+- accurate conceptual recovery;
+- semantic source admission;
+- a product-generated corrected candidate;
+- professional permission to rely;
+- protected harness promotion; or
+- product fit, deployment, research quality or cumulative improvement.
 
 This is not a product demo.
 
 ## Next action
 
-Commission an independent hostile review of one outcome-complete vertical contract from the current governing artifacts. Do not execute or revive an older packet automatically. Recompile only the smallest adapter or implementation experiment that the hostile review shows can materially change the product decision.
+The independent reviewer executes Packet 004 and returns the exact receipt and commit directly to PRO and coordinating Codex. The programme state remains `CONTINUING`; no routine human decision is required.
