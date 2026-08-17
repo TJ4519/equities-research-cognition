@@ -1,0 +1,13 @@
+[project]
+name = "expert-judgment-flywheel"
+version = "0.0.0"
+description = "Trace-linked blind expert review for agentic research"
+license = "MIT"
+requires-python = ">=3.14,<3.15"
+dependencies = [
+  "Django==6.0.7",
+  "psycopg[binary]==3.3.4",
+]
+
+[tool.uv]
+package = false

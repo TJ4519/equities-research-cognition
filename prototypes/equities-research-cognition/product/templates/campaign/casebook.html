@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+{% block title %}{{ campaign.title }} · Investment Casebook{% endblock %}
+{% block content %}
+<div class="eyebrow">Investment Casebook</div>
+<h1>{{ campaign.title }}</h1>
+<p class="muted">The Casebook shows decisions, research steps, evidence and explicit absences. Runtime evidence remains available in the Technical Record.</p>
+<p class="badge">No analyst judgment or improvement is claimed until the later human and protected-evaluation stages occur.</p>
+
+{% if runtime_block and order_rows %}
+<section class="card">
+  <h2>{% if runtime_attempted %}Research did not start{% else %}Research runtime is not ready{% endif %}</h2>
+  <p class="warn">{{ runtime_block }}</p>
+  {% if not runtime_history_exists and not artifact_history_exists %}
+  <p>No Codex session has started and no research output exists.</p>
+  {% elif runtime_attempted %}
+  <p>This start attempt created no new research runtime or output. Existing history remains visible below.</p>
+  {% else %}
+  <p>New work cannot start with the current runtime configuration. Existing history remains visible below.</p>
+  {% endif %}
+</section>
+{% endif %}
+
+<section class="card">
+  <h2>What must be decided</h2>
+  <p>{{ campaign.equities_decision_use }}</p>
+  <h3>Research question</h3>
+  <blockquote>{{ campaign.commissioned_question }}</blockquote>
+  <dl>
+    <dt>Issuer / security</dt><dd>{{ campaign.issuer_or_security }}</dd>
+    <dt>Evidence cutoff</dt><dd>{{ campaign.evidence_cutoff|date:"Y-m-d" }}</dd>
+  </dl>
+</section>
+
+{% if state_rows %}
+<section>
+  <h2>Current investment case</h2>
+  <p class="muted">Each card is a candidate change to the research state. Only an explicitly accepted state may carry into ordinary follow-on research.</p>
+  {% for row in state_rows %}
+  <article class="card">
+    <div class="split">
+      <div><h3>{{ row.decision_hinge }}</h3><p class="muted">{{ row.transition.work_order.proposal.title }}</p></div>
+      <span class="status">{{ row.display_state }}</span>
+    </div>
+    <h3>What changed</h3>
+    <blockquote>{{ row.delta_summary }}</blockquote>
+    <h3>New evidence</h3>
+    {% for source in row.source_changes %}
+    <div class="record">
+      <p><strong>{{ source.source_name }}</strong> · {{ source.access_state }} · {{ source.published_at|default:"publication date unavailable" }}</p>
+      {% if source.exact_passage %}<p>{{ source.exact_passage }}</p>{% else %}<p class="muted">{{ source.locator }}</p>{% endif %}
+    </div>
+    {% empty %}<p class="muted">No new source receipt was added in this step.</p>{% endfor %}
+    {% for observation in row.observation_changes %}
+    <p><strong>{{ observation.statement }}</strong><br><span class="muted">{{ observation.authority }}</span></p>
+    {% endfor %}
+    <h3>Working alternatives</h3>
+    <div class="rubric">
+      {% for mechanism in row.mechanisms %}
+      <article>
+        <h3>{{ mechanism.label }} · {{ mechanism.to_status }}</h3>
+        <p>Missing discriminator: {{ mechanism.missing_discriminator }}</p>
+      </article>
+      {% endfor %}
+    </div>
+    <h3>What remains unresolved</h3>
+    {% for uncertainty in row.uncertainties %}
+    <p><strong>{{ uncertainty.question }}</strong><br>{{ uncertainty.next_discriminator }}</p>
+    {% endfor %}
+    <h3>Claim boundary</h3>
+    <p><strong>This step may claim:</strong> {{ row.claim_ceiling }}</p>
+    {% for claim in row.claims %}
+    <p><strong>{{ claim.to_status }}</strong> · {{ claim.allowed_language }}<br><span class="warn">Do not say: {{ claim.forbidden_language }}</span></p>
+    {% endfor %}
+    <h3>Decision consequence</h3>
+    <p>{{ row.decision.consequence }}</p>
+    <p class="muted">{{ row.decision.no_action_condition }}</p>
+    <h3>Proposed next research route</h3>
+    <p>{{ row.route.next_step }}</p>
+    {% if row.is_current_accepted %}
+    <form method="post" action="{% url 'campaign_replan_state' campaign.id row.transition.id %}">
+      {% csrf_token %}
+      <button type="submit">Re-plan from current evidence</button>
+    </form>
+    {% endif %}
+    {% if row.state == "awaiting director" %}
+    <div class="grid">
+      <form method="post" action="{% url 'campaign_accept_state' campaign.id row.transition.id %}">
+        {% csrf_token %}<button type="submit">Accept for follow-on research</button>
+      </form>
+      <form method="post" action="{% url 'campaign_challenge_state' campaign.id row.transition.id %}">
+        {% csrf_token %}
+        <label>What must be challenged or researched again?</label>
+        <textarea name="feedback" required></textarea>
+        <button class="secondary" type="submit">Challenge and route back</button>
+      </form>
+      <form method="post" action="{% url 'campaign_reject_state' campaign.id row.transition.id %}">
+        {% csrf_token %}
+        <label>Optional reason</label><textarea name="reason"></textarea>
+        <button class="secondary" type="submit">Reject this research state</button>
+      </form>
+    </div>
+    {% endif %}
+  </article>
+  {% endfor %}
+</section>
+{% endif %}
+
+{% if not planner_authorized %}
+<section class="card">
+  <h2>Design the research programme</h2>
+  <p>Authorize a planner to turn this commission into rival explanations, discriminating research steps, refusal conditions and explicit stopping rules. This action does not authorize any proposed research step.</p>
+  <form method="post" action="{% url 'campaign_approve_planner_programme' campaign.id %}">
+    {% csrf_token %}
+    <button type="submit">Authorize programme design</button>
+  </form>
+</section>
+{% endif %}
+
+{% if planning_order_rows %}
+<section>
+  <h2>Programme design</h2>
+  {% for row in planning_order_rows %}
+  <article class="card">
+    <div class="split">
+      <div>
+        <h3>{{ row.order.proposal.title }}</h3>
+        <p class="muted">Programme design authorized</p>
+      </div>
+      <span class="status">Planning only</span>
+    </div>
+    <p>{{ row.order.proposal.task }}</p>
+    {% if not row.has_artifacts %}
+    <p>No planner-produced research plan exists yet. This permission does not authorize research.</p>
+    {% endif %}
+    {% include "campaign/_work_order_controls.html" with row=row planning=True %}
+  </article>
+  {% endfor %}
+  {% if planning_results_collectable %}
+  <div class="card">
+    <form method="post" action="{% url 'campaign_collect' campaign.id %}">
+      {% csrf_token %}<button type="submit">Collect the planner's research design</button>
+    </form>
+  </div>
+  {% endif %}
+</section>
+{% endif %}
+
+{% if proposal_rows %}
+<section>
+  <h2>Research decisions</h2>
+  {% for row in proposal_rows %}
+  <article class="card">
+    <div class="split">
+      <div><h3>{{ row.proposal.title }}</h3><p class="muted">{{ row.authored_by }}</p></div>
+      <span class="status">{{ row.state }}</span>
+    </div>
+    <p>{{ row.proposal.task }}</p>
+    {% if row.proposal.parent.disposition.feedback %}
+    <h3>This version responds to</h3>
+    <blockquote class="preserve">{{ row.proposal.parent.disposition.feedback }}</blockquote>
+    {% endif %}
+    {% if row.proposal.disposition.feedback %}<blockquote>{{ row.proposal.disposition.feedback }}</blockquote>{% endif %}
+    {% if row.state == "awaiting director" %}
+    {% if row.is_planner_interpretation %}
+    <p>Confirming this framing does not start research. Every proposed research step remains a separate decision.</p>
+    {% endif %}
+    <form method="post" action="{% url 'campaign_approve_proposal' campaign.id row.proposal.id %}">
+      {% csrf_token %}
+      {% if row.state_mode == "continue" %}
+        {% for state in row.available_state_rows %}
+        <label class="choice"><input type="radio" required name="input_state" value="{{ state.transition.id }}"> Continue from {{ state.delta_summary }}</label>
+        {% empty %}
+        <p class="warn">{{ row.continuation_block }}</p>
+        {% endfor %}
+        <input type="hidden" name="state_basis" value="accepted_transition">
+      {% else %}
+        <input type="hidden" name="state_basis" value="commission">
+        {% if row.proposal.protocol == "synthesis" %}
+        {% for state in accepted_state_rows %}
+        <label class="choice"><input type="checkbox" name="supporting_states" value="{{ state.transition.id }}"> Use supporting research: {{ state.delta_summary }}</label>
+        {% endfor %}
+        {% endif %}
+      {% endif %}
+      {% if row.state_mode != "continue" or row.available_state_rows %}
+      <button type="submit">{% if row.is_planner_interpretation %}Confirm this research framing{% else %}Approve this research step{% endif %}</button>
+      {% endif %}
+    </form>
+    <div class="grid">
+      <form method="post" action="{% url 'campaign_reject_proposal' campaign.id row.proposal.id %}">
+        {% csrf_token %}
+        <label>Optional reason</label><textarea name="reason"></textarea>
+        <button class="secondary" type="submit">Reject this {% if row.is_planner_interpretation %}framing{% else %}step{% endif %}</button>
+      </form>
+      <form method="post" action="{% url 'campaign_request_proposal_revision' campaign.id row.proposal.id %}">
+        {% csrf_token %}
+        <label>{% if row.is_planner_interpretation %}What did the planner misunderstand?{% else %}Rough feedback may be incomplete{% endif %}</label><textarea name="feedback"{% if row.is_planner_interpretation %} required{% endif %}></textarea>
+        <button class="secondary" type="submit">{% if row.is_planner_interpretation %}Ask the planner to revise{% else %}Ask for another version{% endif %}</button>
+      </form>
+    </div>
+    {% elif not row.is_planner_interpretation %}
+    <details>
+      <summary>Write an attributed director version</summary>
+      <form method="post" action="{% url 'campaign_rewrite_proposal' campaign.id row.proposal.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="target_role" value="{{ row.proposal.protocol }}">
+        <label>Director-authored research task</label>
+        <textarea name="task" required>{{ row.proposal.task }}</textarea>
+        <label>Why this version is needed</label>
+        <textarea name="rationale" required></textarea>
+        <button type="submit">Record director version</button>
+      </form>
+    </details>
+    {% endif %}
+  </article>
+  {% endfor %}
+</section>
+{% endif %}
+
+{% if research_order_rows %}
+<section>
+  <h2>Approved research</h2>
+  {% for row in research_order_rows %}
+  <article class="card">
+    <h3>{{ row.order.proposal.title }}</h3>
+    <p>{{ row.order.proposal.task }}</p>
+    {% include "campaign/_work_order_controls.html" with row=row planning=False %}
+  </article>
+  {% endfor %}
+  {% if research_results_collectable %}
+  <div class="card">
+    <form method="post" action="{% url 'campaign_collect' campaign.id %}">
+      {% csrf_token %}<button type="submit">Collect new research results</button>
+    </form>
+  </div>
+  {% endif %}
+</section>
+{% endif %}
+
+{% if runtime_active %}
+<section class="card">
+  <h2>Campaign runtime</h2>
+  <p>The campaign's Codex runtime is active.</p>
+  <form method="post" action="{% url 'campaign_stop' campaign.id %}">
+    {% csrf_token %}<button class="secondary" type="submit">Stop this campaign runtime</button>
+  </form>
+</section>
+{% endif %}
+
+<section>
+  <h2>Evidence in custody</h2>
+  {% for artifact in artifacts %}
+  <a class="card case-link" href="{% url 'campaign_artifact' campaign.id artifact.id %}">
+    <h3>{{ artifact.work_order.proposal.title }}</h3>
+    <p class="muted">Research output · {{ artifact.kind }} · version {{ artifact.version }}</p>
+  </a>
+  {% empty %}<div class="card"><p>No research output is in custody yet.</p></div>{% endfor %}
+</section>
+
+<section class="card">
+  <h2>Operational evidence</h2>
+  {% if trace_links %}
+  <p>Every approved work step has an exact provider observation joined to the exact stored output.</p>
+  {% elif can_correlate %}
+  <p>Exact output receipts are ready for one supported Langfuse readback.</p>
+  <form method="post" action="{% url 'campaign_correlate' campaign.id %}">
+    {% csrf_token %}<button type="submit">Read back operational evidence</button>
+  </form>
+  {% else %}
+  <p>Operational correlation is not complete.</p>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>Expert distillation</h2>
+  <p>No case has been sealed and admitted to blind analyst review.</p>
+</section>
+
+<details class="card">
+  <summary>Technical record</summary>
+  <p>Campaign <code>{{ campaign.id }}</code> · session <code>{{ campaign.ntm_session }}</code></p>
+  <h3>Proposals</h3>
+  {% for row in all_proposal_rows %}<p><code>{{ row.proposal.id }}</code> · {{ row.state }} · <code>{{ row.proposal.digest }}</code></p>{% empty %}<p>None.</p>{% endfor %}
+  <h3>Work orders</h3>
+  {% for order in orders %}<p><code>{{ order.id }}</code> · producer <code>{{ order.logical_role_id }}</code> · <code>{{ order.digest }}</code></p>{% empty %}<p>None.</p>{% endfor %}
+  <h3>Runtime</h3>
+  {% for event in runtime_events %}<p>{{ event.kind }} · success={{ event.succeeded }} · <code>{{ event.digest }}</code></p>{% empty %}<p>None.</p>{% endfor %}
+  <h3>Provider joins</h3>
+  {% for link in trace_links %}<p>Observation <code>{{ link.observation_id }}</code> · trace <code>{{ link.trace_id }}</code> · <code>{{ link.digest }}</code></p>{% empty %}<p>None.</p>{% endfor %}
+  <h3>Research-state transitions</h3>
+  {% for row in state_rows %}<p><code>{{ row.transition.id }}</code> · {{ row.state }} · state <code>{{ row.transition.state_artifact.digest }}</code> · delta <code>{{ row.transition.delta_artifact.digest }}</code></p>{% empty %}<p>None.</p>{% endfor %}
+</details>
+
+<p><a href="{% url 'campaigns' %}">Return to campaigns</a></p>
+{% endblock %}

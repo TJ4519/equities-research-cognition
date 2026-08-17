@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}{{ campaign.title }} · Modelling job{% endblock %}
+{% block content %}
+<h1>{{ campaign.title }}</h1>
+
+<section class="card">
+  <h2>Objective</h2>
+  <p>{{ run_spec.objective }}</p>
+  <p><strong>Decision use:</strong> {{ campaign.equities_decision_use }}</p>
+  <p><strong>Issuer or security:</strong> {{ campaign.issuer_or_security }}</p>
+  <p><strong>Evidence cutoff:</strong> {{ campaign.evidence_cutoff|date:"Y-m-d" }}</p>
+</section>
+
+<section class="card">
+  <h2>Exact inputs</h2>
+  {% for input in input_artifacts %}
+  <p>
+    <strong>{{ input.get_role_display }}:</strong>
+    <a href="{% url 'campaign_input_artifact' campaign.id input.id %}">{{ input.filename }}</a><br>
+    <code>{{ input.digest }}</code>
+  </p>
+  {% endfor %}
+</section>
+
+<section class="card">
+  <h2>Authorised work</h2>
+  <p>{{ run_spec.instruction }}</p>
+  <p>Run specification <code>{{ run_spec.id }}</code><br><code>{{ run_spec.digest }}</code></p>
+  <p><strong>Provisional result only.</strong> A returned candidate cannot change or replace an owned artifact.</p>
+
+  {% with row=bound_order_row %}
+  {% if row.contract_error %}
+  <p class="warn">{{ row.contract_error }}</p>
+  {% elif runtime_block and not row.launch %}
+  <p class="warn">Work cannot start: {{ runtime_block }}</p>
+  {% elif not row.launch %}
+  <form method="post" action="{% url 'campaign_launch' campaign.id row.order.id %}">
+    {% csrf_token %}<button type="submit">Start this work</button>
+  </form>
+  {% elif not row.launch.succeeded %}
+  <p class="warn">Work did not start. The failed attempt remains in the record.</p>
+  {% elif not row.send %}
+  <form method="post" action="{% url 'campaign_refresh' campaign.id row.order.id %}">
+    {% csrf_token %}<button class="secondary" type="submit">Check readiness</button>
+  </form>
+  {% if row.ready %}
+  <form method="post" action="{% url 'campaign_send' campaign.id row.order.id %}">
+    {% csrf_token %}<button type="submit">Send the exact job</button>
+  </form>
+  {% endif %}
+  {% elif not row.send.succeeded %}
+  <p class="warn">The exact job was not acknowledged by the runtime. Its outcome is unknown.</p>
+  {% elif row.has_artifacts %}
+  <p class="status">The exact worker output is in custody.</p>
+  {% elif row.completion_observed %}
+  <p class="status">The worker has completed. Its output is ready for custody checks.</p>
+  <form method="post" action="{% url 'campaign_collect' campaign.id %}">
+    {% csrf_token %}<button type="submit">Collect the exact result</button>
+  </form>
+  {% else %}
+  <p class="status">The exact job was sent; completion has not yet been observed.</p>
+  <form method="post" action="{% url 'campaign_refresh' campaign.id row.order.id %}">
+    {% csrf_token %}<button class="secondary" type="submit">Check this work</button>
+  </form>
+  {% endif %}
+  {% endwith %}
+</section>
+
+<section class="card">
+  <h2>Result</h2>
+  {% if bound_acknowledgement and bound_outcome %}
+  <p>The worker acknowledged this exact job, run specification, work order and input population.</p>
+  {% if bound_outcome.kind == "candidate" %}
+  <p><strong>Provisional candidate:</strong> {{ bound_outcome.summary }}</p>
+  <pre>{{ bound_outcome.candidate }}</pre>
+  {% else %}
+  <p><strong>Bounded refusal:</strong> {{ bound_outcome.refusal }}</p>
+  {% endif %}
+  <p><a href="{% url 'campaign_artifact' campaign.id bound_outcome_artifact.id %}">Download the exact result</a></p>
+  {% else %}
+  <p>No semantic acknowledgement or result is in custody yet.</p>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>Not established</h2>
+  <p>No workbook parsing, formula preservation, recalculation, change application, adoption, release, analyst validation, or improvement is claimed.</p>
+</section>
+
+<details class="card">
+  <summary>Operational record</summary>
+  <p>Job <code>{{ campaign.id }}</code> · work order <code>{{ bound_order_row.order.id }}</code></p>
+  {% for event in runtime_events %}
+  <p>{{ event.kind }} · success={{ event.succeeded }} · <code>{{ event.digest }}</code></p>
+  {% empty %}<p>No runtime event exists.</p>{% endfor %}
+  {% if bound_acknowledgement %}<pre>{{ bound_acknowledgement }}</pre>{% endif %}
+</details>
+
+<p><a href="{% url 'campaigns' %}">Return to jobs</a></p>
+{% endblock %}

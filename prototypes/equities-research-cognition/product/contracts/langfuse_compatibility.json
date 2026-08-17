@@ -1,0 +1,44 @@
+{
+  "schema_version": "langfuse-compatibility/v4",
+  "test_class": "MECHANICAL_REGRESSION_ONLY",
+  "selected_candidate": "cloud-v2",
+  "claim_ceiling": "local-schema-compatibility-only",
+  "ingestion": {
+    "transport": "OTLP/HTTP protobuf",
+    "traces_endpoint": "/api/public/otel/v1/traces",
+    "required_headers": ["Authorization: Basic <project-key-pair>", "x-langfuse-ingestion-version: 4"],
+    "credential_channel": "OTEL_EXPORTER_OTLP_TRACES_HEADERS runtime environment; no credential or environment placeholder in frozen Codex config",
+    "tool_subprocess_policy": "Codex shell subprocesses exclude OTEL_EXPORTER_OTLP_TRACES_HEADERS and FLYWHEEL_LANGFUSE_AUTHORIZATION, with login-shell loading disabled",
+    "trace_id": "32-lowercase-hex",
+    "observation_id": "16-lowercase-hex",
+    "session_attribute": "langfuse.session.id",
+    "accepted_session_alias": "session.id",
+    "propagation": "session attribute must be present on every span",
+    "attribute_encoding": "langfuse.observation.type is lowercase; langfuse.observation.model.name is a string; langfuse.observation.usage_details and cost_details are JSON strings",
+    "correlation_attributes": ["langfuse.observation.metadata.flywheel_run_id", "langfuse.observation.metadata.flywheel_work_order_id", "langfuse.observation.metadata.flywheel_work_order_proposal_digest", "langfuse.observation.metadata.flywheel_role_instance", "langfuse.observation.metadata.flywheel_role_contract"],
+    "native_thread_attribute": "conversation.id or thread.id remains native OTLP metadata and is not rewritten into artifact authorship"
+  },
+  "cloud-v2": {
+    "availability": "Langfuse Cloud only",
+    "endpoint": "/api/public/v2/observations",
+    "required_query": ["filter=sessionId and matching startTime bounds", "fromStartTime", "toStartTime", "fields=core,basic,metadata,model,usage", "bounded limit and cursor"],
+    "pagination": "follow meta.cursor until absent; enforce per-page limit and global startTime-descending order; reject changed query, repeated cursor, extra page, duplicate row, or incomplete chain",
+    "required_row_fields": ["id", "traceId", "startTime", "endTime", "projectId", "parentObservationId", "type", "name", "level", "statusMessage", "sessionId", "metadata.flywheel_run_id", "metadata.flywheel_work_order_id", "metadata.flywheel_work_order_proposal_digest", "metadata.flywheel_role_instance", "metadata.flywheel_role_contract", "metadata.resourceAttributes"],
+    "generation_fields": ["providedModelName", "usageDetails"],
+    "population_rule": "partition all session-filtered rows by exact work-order metadata; require one complete native trace per initial work order, one native Codex turn root, complete parent references, and no missing, unknown, or duplicate rows; join the provider-issued root to the work order's worker-attested primary artifact without manufacturing artifact spans",
+    "missing_rules": {
+      "core_basic_or_artifact_binding": "reject",
+      "generation_model_or_usage": "reject",
+      "costDetails": "absent or null is accepted as unavailable; never emit Langfuse price inference as subscription spend",
+      "open_pre_registration_or_out_of_window_observation": "reject"
+    }
+  },
+  "self-hosted-v1": {
+    "availability": "blocked-until-exact-deployment-version-and-response-fixture",
+    "reason": "Observations API v2 is Cloud-only; self-hosted readback varies by deployed version",
+    "may_reuse_cloud_mapping_without_proof": false
+  },
+  "normalization_output": "closed-validator-only",
+  "admission_allowed": false,
+  "official_sources": ["https://langfuse.com/integrations/native/opentelemetry", "https://langfuse.com/docs/api-and-data-platform/features/observations-api", "https://cloud.langfuse.com/generated/api/openapi.yml", "https://opentelemetry.io/docs/specs/otel/protocol/exporter/", "https://developers.openai.com/codex/config-advanced"]
+}

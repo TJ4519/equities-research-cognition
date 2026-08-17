@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Review queue · Judgment Workbench{% endblock %}
+{% block content %}
+<div class="eyebrow">Equities review</div>
+<h1>Your blind-review queue</h1>
+<p class="muted">{{ assignments|length }} case{{ assignments|length|pluralize }} in your review queue.</p>
+{% for assignment in assignments %}
+<a class="card case-link" href="{% url 'case' assignment.case_id %}">
+  <h2>{{ assignment.case.question }}</h2>
+  <p class="muted">{% if assignment.first_pass.completion %}Completed — inspect the durable result.{% elif assignment.first_pass %}First pass locked — diagnosis and consequences pending.{% else %}Open the blind evidence packet and rubric.{% endif %}</p>
+</a>
+{% empty %}<section class="card"><p>No cases are currently assigned.</p></section>{% endfor %}
+{% endblock %}

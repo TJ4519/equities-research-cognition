@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Blind evidence packet · Judgment Workbench{% endblock %}
+{% block content %}
+<div class="eyebrow">Blind evidence packet</div>
+<h1>{{ case.question }}</h1>
+<section class="card">
+  <h2>Source</h2>
+  <dl class="meta"><dt>Identity</dt><dd><a href="{{ case.source_url }}">{{ case.source_identity }}</a></dd><dt>Locator</dt><dd>{{ case.source_locator }}</dd></dl>
+  <blockquote>{{ case.exact_passage }}</blockquote>
+  <h2>Necessary context</h2>
+  {% for item in case.context_items %}<article><dl class="meta"><dt>Identity</dt><dd><a href="{{ item.source_url }}">{{ item.source_identity }}</a></dd><dt>Locator</dt><dd>{{ item.locator }}</dd></dl><blockquote>{{ item.exact_passage }}</blockquote></article>{% endfor %}
+</section>
+<section class="card">
+  <h2>Full decision rubric</h2>
+  <div class="rubric">{% for item in case.rubric %}<article><h3>{{ item.label }}</h3><p>{{ item.criterion }}</p></article>{% endfor %}</div>
+</section>
+<section class="card">
+  <h2>Lock your first pass</h2>
+  <p class="muted">Submit only after reviewing the evidence and rubric. Your decision cannot be edited after reveal.</p>
+  <form method="post" action="{% url 'lock' case.id %}">
+    {% csrf_token %}
+    <input type="hidden" name="packet_digest" value="{{ case.packet_digest }}">
+    <input type="hidden" name="rubric_digest" value="{{ case.rubric_digest }}">
+    {% for value, label in decision_choices %}<label class="choice"><input type="radio" name="decision" value="{{ value }}" required> {{ label }}</label>{% endfor %}
+    <label for="rationale">Rationale</label>
+    <textarea id="rationale" name="rationale" rows="7" required></textarea>
+    <button type="submit">Lock first pass and reveal lineage</button>
+  </form>
+</section>
+<p><a href="{% url 'queue' %}">Return to queue</a></p>
+{% endblock %}

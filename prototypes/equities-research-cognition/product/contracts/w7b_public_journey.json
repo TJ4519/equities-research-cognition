@@ -1,0 +1,83 @@
+{
+  "schema_version": "w7b-public-journey/v1",
+  "claim": "expert_operability_only",
+  "authority": {
+    "product_facts": "application_domain_records",
+    "agent_runtime": "ntm_persistent_codex_rie",
+    "runtime_correlation": "langfuse_non_authoritative",
+    "legacy_runtime": "forbidden"
+  },
+  "subject_modes": {
+    "legacy_fixture_import": {
+      "may_drive_engineering_checks": true,
+      "may_count_as_live_runtime_evidence": false,
+      "may_count_as_expert_evidence": false
+    },
+    "contract_fixture": {
+      "may_drive_engineering_checks": true,
+      "may_count_as_live_runtime_evidence": false,
+      "may_count_as_expert_evidence": false
+    },
+    "native_observed_run": {
+      "may_drive_engineering_checks": true,
+      "may_count_as_live_runtime_evidence": true,
+      "may_count_as_expert_evidence": false
+    },
+    "langfuse_observed_run": {
+      "may_drive_engineering_checks": true,
+      "may_count_as_live_runtime_evidence": true,
+      "may_count_as_expert_evidence": false
+    }
+  },
+  "transitions": [
+    {
+      "id": "authenticate_before_delivery",
+      "preconditions": ["enrolled reviewer account", "valid server session"],
+      "observable_result": "eligible queue without case disclosure before authentication",
+      "forbidden": ["form identity", "query identity", "CLI identity", "legal identity claim"]
+    },
+    {
+      "id": "deliver_decision_complete_blind_packet",
+      "preconditions": ["authenticated eligible session", "stable packet and rubric versions"],
+      "observable_result": "source identity, locator, exact passage, necessary context, and full rubric",
+      "forbidden": ["model cue", "selector cue", "route cue", "comparison cue", "trace cue", "lineage cue"]
+    },
+    {
+      "id": "lock_human_first_pass",
+      "preconditions": ["authenticated eligible session", "current packet version", "current rubric version"],
+      "observable_result": "immutable human-authored first pass bound to session and reviewed snapshots",
+      "forbidden": ["resubmission", "stale version", "cross-session authorship", "pre-lock reveal"]
+    },
+    {
+      "id": "reveal_exact_lineage",
+      "preconditions": ["durable first-pass lock"],
+      "observable_result": "structured lineage with drill-down to captured prompts, roles, tools, skills, sources, artifacts, claim transitions, and synthesis use",
+      "forbidden": ["summary called exact without records", "digest called content", "unlabelled missing data", "unlabelled redaction"]
+    },
+    {
+      "id": "author_diagnosis",
+      "preconditions": ["post-lock reveal available", "same authenticated session"],
+      "observable_result": "durable human-authored diagnosis and adjudication",
+      "forbidden": ["mechanical diagnosis", "proxy review", "implementor-authored expert judgment"]
+    },
+    {
+      "id": "commit_three_independent_consequences",
+      "preconditions": ["valid diagnosis", "all three requests valid before first write"],
+      "observable_result": "atomic current-correction, rubric/evaluation, and future-proposal decisions with separate targets and projections",
+      "forbidden": ["partial write", "fixed lane mapping", "one lane implying another", "future proposal activation"]
+    },
+    {
+      "id": "reconstruct_truthfully_after_restart",
+      "preconditions": ["persisted review history and consequence state"],
+      "observable_result": "exact accepted, rejected, deferred, and absent states without new writes or cognition",
+      "forbidden": ["digest reconstruction", "blanket quarantine message", "invented completion", "invented current state"]
+    }
+  ],
+  "global_invariants": [
+    "blind chronology is append-only",
+    "fixture and expert authorship remain distinguishable",
+    "accepted future proposal is inactive until a separate governed activation",
+    "held-out later work never enters teaching input",
+    "no local engineering result is product or learning evidence"
+  ]
+}

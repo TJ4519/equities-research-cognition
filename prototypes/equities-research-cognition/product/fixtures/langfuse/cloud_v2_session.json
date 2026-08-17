@@ -1,0 +1,100 @@
+{
+  "schema_version": "langfuse-cloud-v2-readback/v1",
+  "test_class": "MECHANICAL_REGRESSION_ONLY",
+  "deployment": "cloud-v2",
+  "endpoint": "/api/public/v2/observations",
+  "pages": [
+    {
+      "request": {
+        "fields": "core,basic,metadata,model,usage",
+        "filter": "[{\"column\":\"sessionId\",\"operator\":\"=\",\"type\":\"string\",\"value\":\"11111111-1111-4111-8111-111111111111\"},{\"column\":\"startTime\",\"operator\":\">=\",\"type\":\"datetime\",\"value\":\"2026-07-16T00:00:00Z\"},{\"column\":\"startTime\",\"operator\":\"<\",\"type\":\"datetime\",\"value\":\"2026-07-17T00:00:00Z\"}]",
+        "limit": 1,
+        "fromStartTime": "2026-07-16T00:00:00Z",
+        "toStartTime": "2026-07-17T00:00:00Z",
+        "cursor": null
+      },
+      "response": {
+        "data": [
+          {
+            "id": "1111111111111111",
+            "traceId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "startTime": "2026-07-16T12:00:02Z",
+            "endTime": "2026-07-16T12:00:03Z",
+            "projectId": "fixture-project",
+            "parentObservationId": null,
+            "type": "GENERATION",
+            "name": "provisional_judgment",
+            "level": "DEFAULT",
+            "statusMessage": null,
+            "sessionId": "11111111-1111-4111-8111-111111111111",
+            "providedModelName": "codex-subscription-model",
+            "usageDetails": {
+              "input": 10,
+              "output": 5
+            },
+            "costDetails": null,
+            "metadata": {
+              "flywheel_run_id": "11111111-1111-4111-8111-111111111111",
+              "flywheel_work_order_id": "22222222-2222-4222-8222-222222222222",
+              "flywheel_work_order_proposal_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+              "flywheel_role_instance": "provisional_judge",
+              "flywheel_role_contract": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "resourceAttributes": {
+                "conversation.id": "019f0000-0000-7000-8000-000000000001"
+              }
+            }
+          }
+        ],
+        "meta": {
+          "cursor": "page-2"
+        }
+      }
+    },
+    {
+      "request": {
+        "fields": "core,basic,metadata,model,usage",
+        "filter": "[{\"column\":\"sessionId\",\"operator\":\"=\",\"type\":\"string\",\"value\":\"11111111-1111-4111-8111-111111111111\"},{\"column\":\"startTime\",\"operator\":\">=\",\"type\":\"datetime\",\"value\":\"2026-07-16T00:00:00Z\"},{\"column\":\"startTime\",\"operator\":\"<\",\"type\":\"datetime\",\"value\":\"2026-07-17T00:00:00Z\"}]",
+        "limit": 1,
+        "fromStartTime": "2026-07-16T00:00:00Z",
+        "toStartTime": "2026-07-17T00:00:00Z",
+        "cursor": "page-2"
+      },
+      "response": {
+        "data": [
+          {
+            "id": "2222222222222222",
+            "traceId": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "startTime": "2026-07-16T12:00:00Z",
+            "endTime": "2026-07-16T12:00:01Z",
+            "projectId": "fixture-project",
+            "parentObservationId": null,
+            "type": "GENERATION",
+            "name": "comparison_judgment",
+            "level": "DEFAULT",
+            "statusMessage": null,
+            "sessionId": "11111111-1111-4111-8111-111111111111",
+            "providedModelName": "codex-subscription-model",
+            "usageDetails": {
+              "input": 10,
+              "output": 5
+            },
+            "costDetails": null,
+            "metadata": {
+              "flywheel_run_id": "11111111-1111-4111-8111-111111111111",
+              "flywheel_work_order_id": "33333333-3333-4333-8333-333333333333",
+              "flywheel_work_order_proposal_digest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+              "flywheel_role_instance": "comparison_judge",
+              "flywheel_role_contract": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "resourceAttributes": {
+                "conversation.id": "019f0000-0000-7000-8000-000000000002"
+              }
+            }
+          }
+        ],
+        "meta": {
+          "cursor": null
+        }
+      }
+    }
+  ]
+}

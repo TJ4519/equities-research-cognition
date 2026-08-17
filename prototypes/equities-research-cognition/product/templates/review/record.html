@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Exact lineage record · Judgment Workbench{% endblock %}
+{% block content %}
+<div class="eyebrow">Post-lock exact lineage</div>
+<h1>{{ record.label }}</h1>
+<dl class="meta"><dt>Locator</dt><dd>{{ record.locator }}</dd><dt>SHA-256</dt><dd><code>{{ record.content_digest }}</code></dd></dl>
+<pre>{{ content }}</pre>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Completed review · Judgment Workbench{% endblock %}
+{% block content %}
+<div class="eyebrow">Review completed</div>
+<h1>{{ packet.question }}</h1>
+{% if current_subject_mode == "legacy_fixture_import" %}<p class="badge">Legacy migration fixture — engineering evidence only. This input is not expert-review evidence.</p>{% endif %}
+{% if current_subject_mode == "contract_fixture" %}<p class="badge">Contract fixture — engineering evidence only. This is not live-runtime or expert evidence.</p>{% endif %}
+{% if current_subject_mode == "native_observed_run" %}<p class="badge">Local native observation — engineering evidence only. This is not Langfuse-observed, accepted-topology, or analyst evidence.</p>{% endif %}
+<section class="card"><h2>Human adjudication</h2><dl class="meta"><dt>First pass</dt><dd>{{ first_pass.get_decision_display }}</dd><dt>Adjudicated</dt><dd>{{ completion.get_adjudicated_decision_display }}</dd></dl><h3>Diagnosis</h3><p>{{ completion.diagnosis }}</p><h3>Corrected judgment</h3><p>{{ completion.corrected_judgment }}</p></section>
+<section class="card"><h2>Three independent decisions</h2>{% for decision in decisions %}<article><h3>{{ decision.family|title }}</h3><dl class="meta"><dt>Decision</dt><dd>{{ decision.action }}</dd><dt>Target</dt><dd>{{ decision.target }}</dd></dl><p>{{ decision.rationale }}</p>{% if decision.payload %}<blockquote>{{ decision.payload }}</blockquote>{% endif %}</article>{% endfor %}</section>
+<section class="card"><h2>Materialized current state</h2>{% if current %}<h3>Current research correction</h3><p>{{ current.corrected_state }}</p>{% else %}<p>Current correction: no accepted effect.</p>{% endif %}{% if rubric %}<h3>Rubric or evaluation state</h3><p>{{ rubric.state_type }} · {{ rubric.proposed_state }}</p>{% else %}<p>Rubric or evaluation: no accepted effect.</p>{% endif %}{% if future %}<h3>Future-behaviour proposal</h3><p class="badge">Inactive and quarantined</p><p>{{ future.intervention_type }} · {{ future.proposed_change }}</p><p><strong>Reversibility:</strong> {{ future.reversibility_plan }}</p>{% else %}<p>Future behaviour: no accepted proposal.</p>{% endif %}</section>
+{% endblock %}

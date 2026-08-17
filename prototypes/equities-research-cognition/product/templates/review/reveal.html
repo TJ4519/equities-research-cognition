@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Locked review and lineage · Judgment Workbench{% endblock %}
+{% block content %}
+<div class="eyebrow">First pass locked · lineage revealed</div>
+<h1>{{ packet.question }}</h1>
+{% if current_subject_mode == "legacy_fixture_import" %}<p class="badge">Legacy migration fixture — engineering evidence only. This input is not expert-review evidence.</p>{% endif %}
+{% if current_subject_mode == "contract_fixture" %}<p class="badge">Contract fixture — engineering evidence only. This is not live-runtime or expert evidence.</p>{% endif %}
+{% if current_subject_mode == "native_observed_run" %}<p class="badge">Local native observation — engineering evidence only. This is not Langfuse-observed, accepted-topology, or analyst evidence.</p>{% endif %}
+<section class="card">
+  <h2>Your immutable first pass</h2>
+  <dl class="meta"><dt>Decision</dt><dd>{{ first_pass.get_decision_display }}</dd><dt>Locked</dt><dd>{{ first_pass.locked_at }}</dd></dl>
+  <p>{{ first_pass.rationale }}</p>
+</section>
+<section class="card">
+  <h2>Execution record availability</h2>
+  <p class="muted">Each captured record is available below. Missing, redacted, and digest-only states are labelled rather than reconstructed.</p>
+  {% for record in records %}
+  <details class="record"><summary><strong>{{ record.kind_label }}</strong> · {{ record.label }} · {{ record.availability_label }}</summary>
+    <dl class="meta"><dt>Locator</dt><dd>{{ record.locator }}</dd>{% if record.artifact_id %}<dt>Artifact</dt><dd><code>{{ record.artifact_id }}</code></dd>{% endif %}{% if record.producer %}<dt>Producer</dt><dd><code>{{ record.producer }}</code></dd>{% endif %}{% if record.trace_id %}<dt>Trace</dt><dd><code>{{ record.trace_id }}</code></dd>{% endif %}{% if record.span_id %}<dt>Span</dt><dd><code>{{ record.span_id }}</code></dd>{% endif %}{% if record.content_digest %}<dt>SHA-256</dt><dd><code>{{ record.content_digest }}</code></dd>{% endif %}</dl>
+    {% if record.relations %}<p><strong>Artifact relations</strong></p><ul>{% for relation in record.relations %}<li><code>{{ relation.relation_type }}</code> → <code>{{ relation.to_artifact_id }}</code></li>{% endfor %}</ul>{% endif %}
+    {% if record.availability == "exact" %}<p><a href="{% url 'record' first_pass.assignment.case_id record.sequence %}" target="_blank">Open exact captured record</a></p>{% else %}<p class="muted">No exact captured content is available for this record.</p>{% endif %}
+  </details>
+  {% empty %}<p class="badge">No lineage records were captured.</p>{% endfor %}
+</section>
+<section class="card">
+  <h2>Diagnose and govern consequences</h2>
+  <p class="muted">Diagnose the revealed residual, then decide each consequence independently. Accepted future proposals remain inactive and quarantined.</p>
+  <form method="post" action="{% url 'complete' first_pass.assignment.case_id %}">
+    {% csrf_token %}
+    <input type="hidden" name="first_pass_id" value="{{ first_pass.id }}">
+    <input type="hidden" name="packet_digest" value="{{ first_pass.packet_digest_snapshot }}">
+    <input type="hidden" name="lineage_digest" value="{{ first_pass.exposure.lineage_digest }}">
+    <label for="adjudicated_decision">Adjudicated decision</label>
+    <select id="adjudicated_decision" name="adjudicated_decision" required><option value="">Choose</option><option value="licensed">Licensed</option><option value="requires_narrowing">Requires narrowing</option><option value="reject">Reject</option><option value="ambiguous">Ambiguous</option></select>
+    <label for="diagnosis">Diagnosis</label><textarea id="diagnosis" name="diagnosis" rows="5" required></textarea>
+    <label for="corrected_judgment">Corrected judgment</label><textarea id="corrected_judgment" name="corrected_judgment" rows="4" required></textarea>
+
+    <h3>Current research correction</h3>
+    <select name="current_action" aria-label="Current correction decision" required><option value="">Choose independently</option><option value="apply_current_correction">Apply current correction</option><option value="reject_current_correction">Reject</option><option value="defer_current_correction">Defer</option><option value="absent_current_correction">No consequence</option></select>
+    <label for="current_payload">Correction text, only when applying</label><textarea id="current_payload" name="current_payload" rows="3"></textarea>
+    <label for="current_rationale">Current-correction rationale</label><textarea id="current_rationale" name="current_rationale" rows="3" required></textarea>
+
+    <h3>Rubric or evaluation consequence</h3>
+    <select name="rubric_action" aria-label="Rubric or evaluation decision" required><option value="">Choose independently</option><option value="create_rubric_precedent">Create rubric precedent</option><option value="create_eval_candidate">Create protected evaluation candidate</option><option value="reject_rubric_or_eval">Reject</option><option value="defer_rubric_or_eval">Defer</option><option value="absent_rubric_or_eval">No consequence</option></select>
+    <label for="rubric_payload">Precedent or evaluation text, only when creating</label><textarea id="rubric_payload" name="rubric_payload" rows="3"></textarea>
+    <label for="rubric_rationale">Rubric or evaluation rationale</label><textarea id="rubric_rationale" name="rubric_rationale" rows="3" required></textarea>
+
+    <h3>Future-behaviour proposal</h3>
+    <select name="future_action" aria-label="Future behaviour decision" required><option value="">Choose independently</option><option value="propose_prompt_change">Propose prompt change</option><option value="propose_retrieval_change">Propose retrieval change</option><option value="propose_workflow_change">Propose workflow change</option><option value="reject_future_change">Reject</option><option value="defer_future_change">Defer</option><option value="absent_future_change">No consequence</option></select>
+    <label for="future_payload">Proposed change, only when proposing</label><textarea id="future_payload" name="future_payload" rows="3"></textarea>
+    <label for="future_reversibility">Reversibility plan, only when proposing</label><textarea id="future_reversibility" name="future_reversibility" rows="3"></textarea>
+    <label for="future_rationale">Future-behaviour rationale</label><textarea id="future_rationale" name="future_rationale" rows="3" required></textarea>
+    <button type="submit">Commit diagnosis and all three decisions</button>
+  </form>
+</section>
+{% endblock %}

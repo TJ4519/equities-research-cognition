@@ -1,0 +1,52 @@
+{
+  "schema": "external-cognition-skill-lock/v1",
+  "packages": [
+    {
+      "file_count": 20,
+      "files": [
+        {"path": "SKILL.md", "sha256": "62a0bc42383153d60d33b98290ae2da83727549fcb7415eb90a00f0670fab71f"},
+        {"path": "agents/openai.yaml", "sha256": "15fb00d83fab0d8b9cbccbc450a6e1edf27ae2f79a2ef21b0ec3b027f2cdf0b5"},
+        {"path": "references/acme-uncertainty-register-template.md", "sha256": "1b09fcc376b7abb3b3bba24d6ef9378b1242f99fdcf8748ffa3d92a93ce76765"},
+        {"path": "references/claim-calibration.md", "sha256": "54707f15aa56675b79540caa74e3ccd5ae06c81f36cf0b44089a255bba9c8837"},
+        {"path": "references/claim-gate-hardening.md", "sha256": "f7187ac21f80f67e52c681e130720c882dc3935dfca1f46754164809fb862c06"},
+        {"path": "references/evaluation-fixtures.md", "sha256": "405a0ec747bcc0613341f173a3817a461b54f82f164a20d7a7c73ccae9b8c1f8"},
+        {"path": "references/expanded-fixture-route-template.md", "sha256": "41eb52149be81bacab389c2c15bd4aa27fa1f8431bdc05bc69cdf3ba9320d9b7"},
+        {"path": "references/fixture-response-format.md", "sha256": "745c113405602de7b4cae2885b25cf8f469ef06e6eb47c8a4cba7f05cb1e33ae"},
+        {"path": "references/graph-evidence-substrate.md", "sha256": "f2061c2e2e7dead8cd40425262830773ac8389d33ea20a75ba5e3144efc33c22"},
+        {"path": "references/mechanism-validation.md", "sha256": "401dd4568d22a02422dd4599a6644b10412d0e6762fca8c90f33c2bd6152ba1f"},
+        {"path": "references/non-pharma-proxy-traps.md", "sha256": "e1e70ad1d70e843551b5716ec8faf64eca4f19b5ce692dd0de3567cec5b594c5"},
+        {"path": "references/pharma-mechanism-library.md", "sha256": "4db6405b5b3f135cbd5f91a42b79548ee8b06a8c9f841c39e8e87167a1cc2224"},
+        {"path": "references/rie-lite-runtime-binding.md", "sha256": "c48dce7a924314d00583d8b300db289bc200491ab14c6b8ba0890d8364b4280c"},
+        {"path": "references/self-improvement-loop.md", "sha256": "e57b41ce1d7ef92ceb8a161ce31258a97e1295115aa471e7849f66919f40d61c"},
+        {"path": "references/semantic-evaluator-rubric.md", "sha256": "9415022c6cd1fd14f386794ef3fc3eb1a143a2b7e68cba4fc056d9dae7204153"},
+        {"path": "references/semantic-scoring-worksheet.md", "sha256": "f47bf664ed40ed98e19563010d6bea5a92a134923bbd6f46c852b8da4b658b37"},
+        {"path": "references/skill-boundary-matrix.md", "sha256": "cf7a6b674e49faa8b99be02d0713fd8bfbee7e60554b4656c5dccc7ad0a7386a"},
+        {"path": "references/strategy-literature-mechanism-cards.md", "sha256": "006485ad85b8a1d6c3a822ad9f2b2a0730488dbc8bb3a7dda843aa684e0afd98"},
+        {"path": "scripts/check_fixture_output.py", "sha256": "4c483a09ad373fd0bcd1f36406b7d9eb36cde6d97306804de5313053f6e19f92"},
+        {"path": "scripts/quick_validate.py", "sha256": "18e58e94fa09fbfbf196fbfa29a0a3a053698f8b9dd298e4f2b74cbb2af3f2d5"}
+      ],
+      "name": "research-frame-search-with-domain-mechanisms",
+      "relative_source": "codex-skills/research-frame-search-with-domain-mechanisms",
+      "skill_sha256": "62a0bc42383153d60d33b98290ae2da83727549fcb7415eb90a00f0670fab71f"
+    },
+    {
+      "file_count": 11,
+      "files": [
+        {"path": "README.md", "sha256": "cc43efe77775de3251f489bd1d53022253c136b06451e14a7bc716590bdfb091"},
+        {"path": "SKILL.md", "sha256": "301e87d199a8f395c062206a1ebd23d103b5ec054f6d986c38e4c3e7b1713258"},
+        {"path": "agents/openai.yaml", "sha256": "d0ff089eec436ec90263343cea020c099cf14cfab18e2d8072e20f2f88bf47f8"},
+        {"path": "references/eval-trace-integration.md", "sha256": "84655c02f365cbdbe8426918011bcabf9dff02599ae9ffeadc0fc2f93741d5b6"},
+        {"path": "references/panel-protocol.md", "sha256": "02d06bbfc3e69322612ae4c0851fcb1fd468cdd062a4e553fa56827ce5559659"},
+        {"path": "references/profile-schema.md", "sha256": "626c184f9c95fab119d45baebb32fa23923df0a145f9c21a9e72cfc7e0d3acda"},
+        {"path": "references/seed-mode-cards.md", "sha256": "503c03a45cad22edf11d4a3ebd3d2333d843d7e3e8fcd0d70cf81c91b922dd0d"},
+        {"path": "references/synthesis-contract.md", "sha256": "332dd04cedb13a246eba2659219adbec558c4efc7501362a71a12cb304ab8370"},
+        {"path": "references/taxonomy-scaffold.md", "sha256": "c1cd7dd0d9b419cc31e2cc8da18d58d8c6b92deb4b376eec2b29aa7982e1a649"},
+        {"path": "references/validation-exemplar.md", "sha256": "53524190d82e67e17ed75c9a73f7559022072e430e1351b826609b686bef2e13"},
+        {"path": "references/worked-synthesis-example.md", "sha256": "3c63b4282abc7383796d9b69a0f5395a3303af300e54faaf73fb625d0f5b2676"}
+      ],
+      "name": "modes-of-reasoning-panel",
+      "relative_source": "codex-skills/modes-of-reasoning-panel",
+      "skill_sha256": "301e87d199a8f395c062206a1ebd23d103b5ec054f6d986c38e4c3e7b1713258"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Jobs · Research work{% endblock %}
+{% block content %}
+<h1>Modelling and research jobs</h1>
+<p class="muted">Create an owned job from an objective and the exact files it may use. Starting it remains a separate action.</p>
+<section class="card">
+  <h2>Create a job</h2>
+  <form method="post" enctype="multipart/form-data">{% csrf_token %}
+    <label for="title">Job title</label>
+    <input id="title" name="title" maxlength="180" required>
+    <label for="issuer_or_security">Issuer / security under analysis</label>
+    <input id="issuer_or_security" name="issuer_or_security" maxlength="240" required>
+    <label for="equities_decision_use">Equities decision use</label>
+    <textarea id="equities_decision_use" name="equities_decision_use" rows="4" required></textarea>
+    <label for="evidence_cutoff">Public-evidence cutoff</label>
+    <input id="evidence_cutoff" name="evidence_cutoff" type="date" required>
+    <label for="question">Objective</label>
+    <textarea id="question" name="commissioned_question" rows="6" required></textarea>
+    <label for="run_instruction">What should Codex produce?</label>
+    <textarea id="run_instruction" name="run_instruction" rows="6" required></textarea>
+    <label for="starting_artifact">Your starting artifact</label>
+    <input id="starting_artifact" name="starting_artifact" type="file" required>
+    <label for="sources">Sources Codex may use</label>
+    <input id="sources" name="sources" type="file" multiple required>
+    <div class="centered-submit">
+      <button type="submit">Create job without starting work</button>
+    </div>
+  </form>
+</section>
+<section>
+  <h2>Your jobs</h2>
+  {% for campaign in campaigns %}
+  <a class="card case-link" href="{% url 'campaign' campaign.id %}">
+    <p class="muted">Created {{ campaign.created_at }}</p>
+    <h2>{{ campaign.title }}</h2>
+    <p class="muted">{{ campaign.commissioned_question|truncatechars:220 }}</p>
+  </a>
+  {% empty %}<div class="card"><p>No jobs exist for this account.</p></div>{% endfor %}
+</section>
+{% endblock %}

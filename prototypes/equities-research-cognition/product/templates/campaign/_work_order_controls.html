@@ -1,0 +1,32 @@
+{% if row.contract_error %}
+<p class="warn">This authorized work predates the current execution contract. It remains inspectable, but a new exact work order must be authorized before execution.</p>
+{% elif not row.launch %}
+  {% if not runtime_block %}
+  <form method="post" action="{% url 'campaign_launch' campaign.id row.order.id %}">
+    {% csrf_token %}
+    <button type="submit">{% if planning %}Start programme design{% else %}Start this research step{% endif %}</button>
+  </form>
+  {% endif %}
+{% elif not row.launch.succeeded %}
+<p class="warn">Research did not start. This failed attempt remains visible; authorize a new exact work order rather than silently retrying it.</p>
+{% elif not row.send %}
+<form method="post" action="{% url 'campaign_refresh' campaign.id row.order.id %}">
+  {% csrf_token %}<button class="secondary" type="submit">Check research readiness</button>
+</form>
+{% if row.ready %}
+<form method="post" action="{% url 'campaign_send' campaign.id row.order.id %}">
+  {% csrf_token %}<button type="submit">{% if planning %}Send the commission to the planner{% else %}Send the approved research brief{% endif %}</button>
+</form>
+{% endif %}
+{% elif not row.send.succeeded %}
+<p class="warn">Dispatch was not acknowledged, so the execution outcome is unknown. This attempt remains visible; inspect it before authorizing new exact work rather than silently retrying it.</p>
+{% elif row.has_artifacts %}
+<p class="status">Exact outputs are in product custody.</p>
+{% elif row.completion_observed %}
+<p class="status">The worker returned to a complete state; exact outputs are ready for custody checks.</p>
+{% else %}
+<p class="status">The research brief was acknowledged; completion has not yet been observed.</p>
+<form method="post" action="{% url 'campaign_refresh' campaign.id row.order.id %}">
+  {% csrf_token %}<button class="secondary" type="submit">Check this work</button>
+</form>
+{% endif %}
