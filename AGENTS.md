@@ -1,8 +1,13 @@
 # Public repository instructions
 
-Read `DEMO_COMMISSION.md`, `ROUTE.md`, and
+Read `PRO_RESPONSIBILITY_PROMPT.md`, `DEMO_COMMISSION.md`, `ROUTE.md`, and
 `prototypes/equities-research-cognition/AGENTS.md` before proposing or changing
 the product.
+
+`PRO_RESPONSIBILITY_PROMPT.md` is the governing public handoff for the
+long-context product owner. The Agentic SDLC applicability brief is optional
+and downstream: do not read it before recovering product intent and repository
+truth as required by that prompt.
 
 This repository exposes a current implementation substrate and a desired
 product direction. Do not collapse them. Existing Django models, NTM panes,
