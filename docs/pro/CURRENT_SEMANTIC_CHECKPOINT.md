@@ -1,8 +1,8 @@
 # Current Semantic Checkpoint
 
-The project is now organised around a continuing company research environment with a specialised model-change workspace, not around campaigns, Excel, agents, provenance records, or the inherited Casebook.
+The project is now organised around a continuing company research environment with a specialised model-change workspace, while all pre-architecture worker packets and backend-first build slices are suspended pending hostile review of one outcome-complete vertical.
 
-Status: active reconstitution point after the user-directed product-system re-commission on 17 August 2026. Git and executable code remain authoritative. This checkpoint records product and build authority; it is not an implementation claim.
+Status: active reconstitution point after the user-directed product-system re-commission and autonomous-owner reconciliation on 17 August 2026. Git and executable code remain authoritative. This checkpoint records product and build authority; it is not an implementation claim.
 
 ## Exact repository basis
 
@@ -12,69 +12,62 @@ Status: active reconstitution point after the user-directed product-system re-co
 - PRO working branch: `agent/pro-grounding`
 - Workbook worker result: `101b83272a473598069d4e14c02552cf48982c56`
 - Workbook reconciliation merge: `3dc187ff47ba0d75eabf54be527bb527d049183f`
-- Parent used for this checkpoint revision: `2f8802c31b595eb1619191f26ab8c9c59222696b`
+- Parent used for this checkpoint reconciliation: `a27b5a3a0b91320627d89f5597c897378fe1e438`
 
-No product model, route, service, prompt, runtime, source policy, or analyst-facing template changed during the product-system re-commission. The new commits are durable architecture and governance artifacts only.
+No product model, route, service, prompt, runtime, source policy, or analyst-facing template changed during the product-system re-commission. The new commits are durable architecture, ownership, and governance artifacts only.
 
 ## Read order
 
 After verifying the branch and current commit, read:
 
 1. `docs/pro/PRO_CONSTITUTION.md`
-2. `docs/pro/PRODUCT_SYSTEM_ARCHITECTURE_V0.md`
-3. `docs/pro/PROFESSIONAL_INTERACTION_AND_STATE_CONTRACT_V0.md`
-4. `docs/pro/CONCEPTUAL_MODEL_CONTRACT_V0.md`
-5. `docs/pro/EVALUATION_AND_HARNESS_EVOLUTION_CONTRACT_V0.md`
-6. `docs/pro/UI_AND_REPOSITORY_SLOP_AUDIT.md`
-7. `docs/pro/REPOSITORY_GROUND.md`
-8. `docs/pro/PROMPT_AND_HARNESS_AUDIT.md`
-9. `docs/pro/DECISION_LEDGER.jsonl`
-10. the exact active assumption-test packet or later explicitly authorised vertical
+2. `docs/pro/AUTONOMOUS_PRODUCT_OWNER_CHARTER.md`
+3. `docs/pro/PRODUCT_SYSTEM_ARCHITECTURE_V0.md`
+4. `docs/pro/PROFESSIONAL_INTERACTION_AND_STATE_CONTRACT_V0.md`
+5. `docs/pro/CONCEPTUAL_MODEL_CONTRACT_V0.md`
+6. `docs/pro/EVALUATION_AND_HARNESS_EVOLUTION_CONTRACT_V0.md`
+7. `docs/pro/UI_AND_REPOSITORY_SLOP_AUDIT.md`
+8. `docs/pro/DECISION_LEDGER.jsonl`
+9. `docs/pro/COUNTEREXAMPLE_REGISTER.md`
+10. `docs/pro/REPOSITORY_GROUND.md` and `docs/pro/PROMPT_AND_HARNESS_AUDIT.md`, reconciled against current code
+11. a worker packet only when this checkpoint and a later ledger entry name it as active
 
-Do not reconstruct the project from an earlier conversation summary or the current UI.
+Do not reconstruct the project from an earlier conversation summary, the current UI, or a stale packet.
+
+## Completion object
+
+A usable product must join this ordinary professional path:
+
+```text
+login and tenant-correct resumption
+-> state or resume one consequential company job
+-> ingest or select the exact native artifact
+-> recover one bounded professional object
+-> confirm or correct meaning and method
+-> capture exact lawful evidence and entitlement
+-> authorise one bounded professional undertaking
+-> run real NTM/Codex work under exact cognition and tool versions
+-> contain a plausible invalid proposal before propagation
+-> present one material exception in ordinary analyst language
+-> apply an attributed correction
+-> create and calculate an exact candidate descendant
+-> expose every displayed consequence from canonical state
+-> record exact permission to rely, rejection, or rework for one named use
+-> recover the same state after restart
+-> turn the exact correction into a protected improvement experiment
+```
+
+A report, static mock-up, raw candidate JSON, simulated spreadsheet review, externally attached workbook, completed document set, green tests, or isolated mechanism does not complete the product.
 
 ## Business and product centre
 
 Useful agent-assisted analyst methods invite more frequent use, more companies, more sources, more transformations, and more downstream consumers. Plausible local mistakes can therefore propagate farther, while exhaustive manual reconstruction erases the leverage.
 
-The business opportunity is to shorten the path from evidence to a relied-upon professional artifact while preserving:
+The business opportunity is to shorten the path from evidence to a relied-upon professional artifact while preserving exact support, economic meaning, method, assumptions, downstream consequences, correction, recalculation, named permission to rely, and protected reversible improvement.
 
-- exact support;
-- economic meaning;
-- method and assumptions;
-- agent proposal versus host fact versus human judgment;
-- downstream consequences;
-- correction and recalculation;
-- named permission to rely; and
-- protected, reversible workflow improvement.
+The mature direction is a continuing company, security, or mandate environment with specialised workspaces appearing when the work requires them. The next product falsification is a specialised model-change workspace using a native spreadsheet as its first artifact adapter.
 
-The mature product direction is a continuing company, security, or mandate environment with specialised workspaces appearing when the work requires them. The first product falsification is a specialised model-change workspace using a native spreadsheet as its first artifact adapter.
-
-Excel is not the product. A standalone Excel companion is no longer the controlling form. It remains a plausible integration and first adapter.
-
-## First complete professional job
-
-The product must make this trace possible in ordinary analyst language:
-
-```text
-state or resume the model change
--> inspect the exact current artifact
--> recover one bounded conceptual object
--> confirm or correct its meaning and method
--> capture exact eligible sources and access
--> authorise one professional undertaking
--> run the minimum bounded agent work quietly
--> block a known invalid proposal before artifact mutation
--> explain the material exception and its consequences
--> apply an attributed correction
--> create and calculate a new candidate artifact
--> show exact downstream changes and remaining uncertainty
--> permit, reject, or rework one exact candidate for one exact use
--> resume the same chronology later
--> convert the correction into a protected evaluation candidate without changing the live harness
-```
-
-A report, static mock-up, raw candidate JSON, simulated spreadsheet review, or externally attached workbook does not complete this job.
+Excel is not the product. A standalone Excel companion is no longer the controlling form. It remains a possible adapter and interaction boundary.
 
 ## Professional interaction grammar
 
@@ -88,13 +81,11 @@ The primary analyst acts are:
 6. amend, reject, or permit use for a named purpose; and
 7. resume the work and allow exact corrections to seed later evaluation.
 
-The host should quietly handle runtime readiness, send, completion observation, collection, calculation, trace correlation, and retries. Those operations appear only when failure changes what the analyst can do or trust.
+The host quietly handles readiness, dispatch, completion, collection, calculation, trace correlation, and retries unless failure changes what the analyst can do or trust.
 
-`Confirm meaning`, `Authorise method`, `Run this work`, `Use candidate`, `Reject`, and `Request rework` are distinct authorities. A generic `Approve` or `Accepted` state is not allowed to stand in for them.
+`Confirm meaning`, `Authorise method`, `Run this work`, `Use candidate`, `Reject`, and `Request rework` are distinct authorities. A generic `Approve` or `Accepted` state cannot stand in for them.
 
 ## Joined system architecture
-
-The architecture contains six implementation planes, none of which becomes primary navigation.
 
 ### Professional job
 
@@ -164,9 +155,7 @@ The review product has fragments but not this joined system.
 
 ### First falsification
 
-A specialised model-change workspace inside the continuing job.
-
-It begins before patching by showing the system's proposed understanding of one model object, then obtains attributed confirmation before a proposal can acquire authority.
+A specialised model-change workspace inside the continuing job. It begins before patching by showing the system's proposed understanding of one model object and obtaining attributed confirmation before a proposal can acquire authority.
 
 ### Mature direction
 
@@ -196,7 +185,7 @@ The following are rejected as organising forms unless later analyst evidence rev
 - raw JSON candidate display;
 - generic approval status;
 - agent-watching product story;
-- institution-memory page before exact professional history exists; and
+- institutional-memory page before exact professional history exists; and
 - backend object implementation without its exact professional interaction and artifact consequence.
 
 The current `index.html`, `job.html`, and `casebook.html` remain useful negative evidence and internal custody views. Cleaner styling would preserve the wrong product.
@@ -237,8 +226,6 @@ The prompt audit remains controlling: host-owned semantic defects are not solved
 
 The live harness cannot change from raw feedback, trace volume, model agreement, or one successful case.
 
-The required path is:
-
 ```text
 exact current artifact correction
 -> failure attribution to intent, representation, source, validator, adapter, prompt, skill, tool, topology, procedure, model, or interaction
@@ -265,27 +252,29 @@ The model may propose attribution or intervention. It cannot approve its own cha
 - restart retrieval; and
 - post-custody Langfuse correlation.
 
-## Current evidence and blockers
+## Historical mechanism evidence
 
-### Workbook capability
+### Worker Packet 001
 
-Worker Packet 001 remains `PARTIAL`.
+Closed and retained as historical proof.
 
-The worker demonstrated a bounded synthetic OOXML patch, formula and target preservation, real LibreOfficeDev recalculation, repeatable semantic results, and visible invalid-formula error. The repository classifier still treats the authorised binary fixture as UTF-8 until Packet 003 is executed and reconciled.
+It demonstrated a bounded synthetic OOXML patch, formula and target preservation, real LibreOfficeDev recalculation, repeatable semantic results, and visible invalid-formula error. The repository classifier still treats the authorised binary fixture as UTF-8. LibreOfficeDev remains proxy evidence, not a selected production engine.
 
-LibreOfficeDev is proxy evidence, not a selected production engine.
+### Worker Packet 002
 
-### Direct Excel surface
+Suspended. Its real-surface-first objective remains relevant, but its branch basis and read order predate the joined architecture and autonomous-owner charter. It may be recompiled only when a current adapter or vertical decision needs the evidence. No Excel-for-the-Web execution is active.
 
-Worker Packet 002 remains the active direct-surface assumption test. It may use only synthetic, plainly disposable cloud artifacts and must return editing, recalculation, provenance, round-trip, repeatability, and cleanup evidence. Existing personal workbooks, credentials, sharing, account administration, and API consent remain prohibited.
+### Worker Packet 003
 
-### Product-system validation
+Suspended repository-hygiene task. The classifier repair remains technically justified but is not a product gate and may not execute automatically.
 
-No qualified analyst has tested the proposed professional interaction grammar. The conceptual contract has not been exercised against a model adjustment or earnings-derived structural addition. Migration cost and job/episode separation remain untested.
+### Prior build contract
+
+`MU-MODEL-UPDATE-V0` and Amendment 001 are suspended as the active sequence and retained as historical proof. Their Micron counterexample, source distinction, workbook evidence, and nonclaims remain useful. Their backend-first Slice 1 order is superseded.
 
 ## Revised build sequence
 
-The former backend capability slices are no longer controlling as implementation order. Future construction, if explicitly authorised, should arrive as outcome-complete verticals:
+Future construction, if explicitly authorised, should arrive as outcome-complete verticals:
 
 ### Vertical A — Understand and confirm one object
 
@@ -305,30 +294,38 @@ Anchored correction, failure attribution, candidate intervention, protected comp
 
 These verticals are architecture, not current implementation authority.
 
-## Current authority
+## Current authority and autonomy
 
-The active Excel-for-the-Web assumption test and queued binary-fixture classifier repair remain authorised under their existing packets.
+Current autonomy level: **Level 1 — architecture ownership**.
 
-No new frontend, backend, source, prompt, agent, adapter, evaluation, or UI implementation packet is authorised.
+No product implementation, adapter assumption test, repository-hygiene packet, prompt revision, source model, conceptual-object model, runtime integration, evaluation runner, or UI packet is active.
 
-A hostile product-system review must first challenge the four new contracts against:
+A joined vertical contract must first survive independent hostile review. Level 2 bounded vertical orchestration requires an accepted outcome-complete contract, stable interfaces, fresh-context reconstitution, hostile review, and no user relay.
+
+Human-only authority remains required for protected data, credentials, API consent, account administration, expenditure, analyst contact, production deployment, external release, professional permission to rely, and tenant-scope harness promotion.
+
+## Hostile review gate
+
+The next lawful product action is an independent hostile review of the joined contracts against:
 
 - the Micron existing-model update;
-- one model adjustment or analyst assumption change;
+- one model adjustment or analyst-assumption change;
 - one earnings-derived or structural addition;
-- direct Excel and proxy adapter evidence;
-- repository migration and lifecycle cost; and
-- expected analyst confirmation and review burden.
+- current repository migrations and lifecycle constraints;
+- direct native-tool and proxy adapter questions that materially affect the vertical;
+- expected analyst confirmation and review burden; and
+- rollback and stale-packet behaviour.
 
-A later ledger entry must explicitly name the first outcome-complete vertical before implementation begins.
+The review must either clear one outcome-complete vertical contract, require revisions, or kill the current form. Only a later ledger entry may activate a recompiled adapter test or implementation packet.
 
 ## Evidence ceiling
 
-The repository has a credible exact-job, runtime, and artifact-custody kernel; a bounded spreadsheet proxy experiment; a committed conceptual-model contract; and a joined product, interaction, evaluation, and negative-product architecture.
+The repository has a credible exact-job, runtime, and artifact-custody kernel; a bounded spreadsheet proxy experiment; a committed conceptual-model contract; a joined product, interaction, evaluation, and negative-product architecture; and an autonomous-owner charter.
 
 It does not establish:
 
 - an implemented product system;
+- delivery autonomy beyond architecture ownership;
 - analyst usefulness or validation;
 - typical sell-side workbook support;
 - direct Excel round-trip or commercial integration;
@@ -343,4 +340,4 @@ This is not a product demo.
 
 ## Next action
 
-Receive and adjudicate the Excel-for-the-Web assumption-test evidence, then complete the queued classifier repair if still warranted. In parallel, subject the joined product-system contracts to hostile review against the three professional beginnings above. Do not issue a new implementation worker packet until that review and a later explicit build authorisation exist.
+Commission an independent hostile review of one outcome-complete vertical contract from the current governing artifacts. Do not execute or revive an older packet automatically. Recompile only the smallest adapter or implementation experiment that the hostile review shows can materially change the product decision.
