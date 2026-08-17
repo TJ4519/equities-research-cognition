@@ -8,10 +8,13 @@ conversations, credentials, run records, or internal task state.
 
 Start with:
 
-1. [DEMO_COMMISSION.md](DEMO_COMMISSION.md) — the problem, intended user
+1. [PRO_RESPONSIBILITY_PROMPT.md](PRO_RESPONSIBILITY_PROMPT.md) — the complete
+   role, context, boot order, evidence discipline, artifact contract and release
+   standard for the new PRO-class owner;
+2. [DEMO_COMMISSION.md](DEMO_COMMISSION.md) — the problem, intended user
    experience, test case, constraints, and requested design response;
-2. [ROUTE.md](ROUTE.md) — the sparse navigation map; and
-3. [the executable package](prototypes/equities-research-cognition/README.md)
+3. [ROUTE.md](ROUTE.md) — the sparse navigation map; and
+4. [the executable package](prototypes/equities-research-cognition/README.md)
    — the Django/PostgreSQL, NTM/Codex, and Langfuse substrate that exists now.
 
 The present code has proved a narrow mechanical transition: an authenticated
@@ -31,8 +34,10 @@ auditable.
 
 ```text
 DEMO_COMMISSION.md                         public design and build brief
+PRO_RESPONSIBILITY_PROMPT.md               complete PRO ownership and boot contract
 ROUTE.md                                   repository navigation and claim boundary
 SOURCE_PROVENANCE.md                       extraction and exclusion record
+docs/AGENTIC_SDLC_APPLICABILITY_BRIEF.md   deliberately separate donor-pattern inquiry
 prototypes/equities-research-cognition/    runnable package and package route
 ```
 

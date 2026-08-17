@@ -13,7 +13,8 @@ protected evidence, or a finished analyst product.
 Enter here to understand the product request, inspect the existing substrate,
 or produce a concrete demo proposal.
 
-Instructions: [AGENTS.md](AGENTS.md) · Commission:
+Instructions: [AGENTS.md](AGENTS.md) · PRO responsibility:
+[PRO_RESPONSIBILITY_PROMPT.md](PRO_RESPONSIBILITY_PROMPT.md) · Product brief:
 [DEMO_COMMISSION.md](DEMO_COMMISSION.md)
 
 ## Navigate
@@ -24,7 +25,11 @@ Instructions: [AGENTS.md](AGENTS.md) · Commission:
 
 ## Work here
 
+- PRO role and boot sequence:
+  [PRO_RESPONSIBILITY_PROMPT.md](PRO_RESPONSIBILITY_PROMPT.md).
 - Product brief: [DEMO_COMMISSION.md](DEMO_COMMISSION.md).
+- Separate donor-pattern inquiry:
+  [docs/AGENTIC_SDLC_APPLICABILITY_BRIEF.md](docs/AGENTIC_SDLC_APPLICABILITY_BRIEF.md).
 - Extraction record: [SOURCE_PROVENANCE.md](SOURCE_PROVENANCE.md).
 - Package entry point:
   [prototypes/equities-research-cognition/manage.py](prototypes/equities-research-cognition/manage.py).
@@ -41,5 +46,5 @@ Instructions: [AGENTS.md](AGENTS.md) · Commission:
 
 ## Keep current
 
-Update when the commission, package boundary, source snapshot, executable entry
-point, or evidence ceiling changes.
+Update when the PRO responsibility, commission, package boundary, source
+snapshot, executable entry point, or evidence ceiling changes.
