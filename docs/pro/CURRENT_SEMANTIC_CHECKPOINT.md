@@ -1,196 +1,265 @@
 # Current Semantic Checkpoint
 
-Status: active reconstitution point for the PRO owner and coordinating Codex agent. This checkpoint is a projection of exact repository and governing artifacts; code and Git remain authoritative. Reconcile it whenever the implementation branch, active contract, or decision ledger changes.
+The project is now testing a governed model-change object whose spreadsheet surface is replaceable, rather than allowing one `.xlsx` fixture or calculation engine to define the product.
 
-Checkpoint recorded on 17 August 2026.
+Status: active reconstitution point for the PRO owner and coordinating Codex agent. Git and repository code remain authoritative. Read the decision ledger and active contract amendment when any older artifact conflicts with this checkpoint.
 
-## Where the work is going
-
-The project is moving toward one artifact-native Micron model-update companion that tests whether agent leverage can survive scale without forcing exhaustive manual reconstruction. Excel remains the native work product. The product must prevent a numerically correct but target-inadmissible source from creating a candidate workbook, then apply an exact correction, recalculate a new candidate, preserve lineage and restart, and record scoped permission to rely on that exact artifact.
-
-The decision advanced by the current work is narrower: determine whether the repository can truthfully parse, patch, preserve, and independently recalculate a bounded `.xlsx` workbook before any source-policy, domain-model, prompt, agent, or interface build begins.
+Checkpoint date: 17 August 2026.
 
 ## Exact repository basis
 
 - Repository: `TJ4519/equities-research-cognition`
 - Governing handoff branch: `agent/pro-responsibility-handoff`
-- Verified implementation and commission commit: `c1fc568424facbb5bb8e1b6369d30a1f380ae308`
+- Verified governing commit: `c1fc568424facbb5bb8e1b6369d30a1f380ae308`
 - PRO working branch: `agent/pro-grounding`
-- Working-branch head used to construct this checkpoint: `89308e2caf0f3db023a6fa4aeaa934daba53d6f5`
-- Default-main commit observed during the handoff inspection: `6498d494b7bcd57fd63ddc4b486d072f765d561f`
+- Workbook worker result: `agent/workbook-capability-spike` at `101b83272a473598069d4e14c02552cf48982c56`
+- Workbook reconciliation merge: `3dc187ff47ba0d75eabf54be527bb527d049183f`
+- Working-branch parent used for this checkpoint revision: `2ced6f62ce8ec33c08c4797a73217e7072720a36`
 
-The working branch is a direct descendant of the governing handoff. Its changes before this checkpoint are governance and build-contract artifacts only; no product code has been changed.
+The workbook worker diff is now part of `agent/pro-grounding`. Its changed surfaces remain limited to experiment code, one synthetic `.xlsx` fixture, a narrow mechanical test, and the evidence receipt. No product model, service, prompt, runtime, source policy, UI, or dependency file changed.
 
-The public repository has no GitHub Actions run attached to the verified handoff commit. The handoff reports 115 passing mechanical tests, but this PRO surface has not independently reproduced that run. Do not convert the reported result into a new receipt.
+## Read order
 
-## Governing artifacts and commits
+After verifying the current branch, read:
 
-Read in this order after verifying the branch and commit:
+1. `docs/pro/PRO_CONSTITUTION.md`
+2. `docs/pro/OPERATING_MODEL_SYNTHESIS.md`
+3. `docs/pro/REPOSITORY_GROUND.md`
+4. `docs/pro/PROMPT_AND_HARNESS_AUDIT.md`
+5. `docs/pro/ACTIVE_BUILD_CONTRACT.md`
+6. `docs/pro/ACTIVE_BUILD_CONTRACT_AMENDMENT_001.md`
+7. `docs/pro/DECISION_LEDGER.jsonl`
+8. `docs/pro/COUNTEREXAMPLE_REGISTER.md`
+9. the worker packet for the active slice
 
-1. `docs/pro/PRO_CONSTITUTION.md` — commit `c98ef7fa2ef23056cb1e9367ae0eaff656271f5f`
-2. `docs/pro/REPOSITORY_GROUND.md` — commit `64fc0889e41a59ee4d69788a430b588be76f093d`
-3. `docs/pro/PROMPT_AND_HARNESS_AUDIT.md` — commit `d279ae525c9123e6e8c8d26eebc626eb7a673fdd`
-4. `docs/pro/AGENTIC_SDLC_APPLICABILITY_MEMO.md` — commit `008d2f8c72f64588043b580773732f734a22844b`
-5. `docs/pro/COUNTEREXAMPLE_REGISTER.md` — commit `cc752f2a940b693a93bd615cacaa6c8c893001d5`
-6. `docs/pro/DECISION_LEDGER.jsonl` — commit `40d3be897a1c6b35265115147f0b4be7f7d19e2d`
-7. `docs/pro/ACTIVE_BUILD_CONTRACT.md` — commit `89308e2caf0f3db023a6fa4aeaa934daba53d6f5`
-
-Then read only the worker packet for the active slice. Do not rebuild context from prior chat summaries when these exact artifacts are available.
+Do not reconstruct the project from a completion summary when these exact artifacts are available.
 
 ## Product and business centre
 
-Useful agent-assisted research methods invite greater frequency, coverage, decomposition, and team use. That increases retrievals, transformations, handoffs, dependencies, and downstream consumers. A plausible error can propagate farther, while full manual checking can erase the leverage.
+Useful agent-assisted analyst methods invite more frequent use, more companies, more source retrievals, more transformations, and more downstream consumers. A plausible local error can therefore propagate farther, while manual reconstruction of every result can erase the leverage.
 
-The product opportunity is to preserve useful agent autonomy and analyst control while making consequential support, calculations, assumptions, changes, corrections, dependencies, and permission to rely on an exact artifact reconstructable. Repeated corrections may later seed protected evaluations and reversible workflow improvements, but no current product evidence establishes cumulative learning.
+The business opportunity is to preserve agent leverage and analyst autonomy while making consequential support, transformations, assumptions, corrections, dependencies, and permission to rely on one exact artifact reconstructable.
 
-The mature product is an ongoing modelling and research environment. It is not the inherited Casebook, a provenance dashboard, a chat wrapper, a static spreadsheet review, an agent graph, an NTM pane view, or a thin control plane.
+The product centre is a governed model-change environment. It is not:
 
-## Selected experimental hypothesis
+- Excel itself;
+- an `.xlsx` patcher;
+- the inherited Casebook;
+- a provenance dashboard;
+- a chat wrapper;
+- a visible agent graph;
+- a static spreadsheet review; or
+- a thin control plane.
 
-Product form: artifact-native companion.
+Excel is an economically important artifact surface. Desktop Excel, Excel for the Web, OOXML manipulation, and LibreOffice may each act as adapters or test surfaces. None supplies the professional conceptual model by itself.
 
-Cold question: can one authenticated Micron model-update job run real NTM/Codex work, block the correct-looking FY2025 revenue proposal when it cites the September 2025 8-K earnings-release exhibit instead of the target-required October 2025 10-K, allow an attributed source replacement, create and recalculate an exact candidate workbook, expose changed dependencies, record `USE | REJECT | AMEND` for one named use, and survive restart without forcing the user to reconstruct the job?
+## Conceptual-model requirement
 
-The public source pair carries the same value, `37,378` USD millions. The target-specific document-class policy supplies the difference. This is not a universal preference for GAAP, filings, annual reports, or the later document.
+A named range gives a target mechanical identity. It does not establish what that target means.
 
-## Current software facts
+Before a model proposal may be admitted, the smallest supported conceptual slice must connect:
 
-Implemented and inspected:
+### Workbook structure and dependencies
 
-- authentication and director-owned jobs;
-- PostgreSQL-backed exact input artifacts and run specifications;
-- canonical work-order packets with frozen protocol, workbench, skill, input, and output identities;
-- allowlisted NTM command shapes and pinned Codex launch arguments;
-- tracked send, observed completion, sealed output, byte attestation, and transactional artifact custody;
-- provisional candidate or bounded refusal envelope;
-- restart retrieval and tenant-correct artifact download;
-- append-only proposal, work-order, runtime, artifact, research-state, and review chronology through the Django layer;
-- direct SQL mutation triggers for exact bound input, run-specification, and bound-work-order history;
-- accepted-state planner re-entry;
-- post-custody Langfuse correlation; and
-- broad mechanical and adversarial tests in the repository.
+- workbook, sheet, table, range, cell, formula, chart, and named-range identity;
+- dependency edges and affected outputs;
+- versions, byte digests, engine, warnings, and errors; and
+- allowed operations and preservation checks.
 
-Confirmed limits:
+### Economic entities and relationships
 
-- bound candidates may contain any non-empty JSON object;
-- source receipts and many semantic attributes are worker-authored;
-- the deliberate wrong-source candidate is preserved as provisional rather than detected;
-- uploaded sources do not create a closed information boundary because Codex launch includes `--search`;
-- workbench prose exceeds executable validation;
-- the blind-review correction path is disconnected from owned artifacts and recomputation;
-- the Casebook exposes backend ontology and forbidden visual language;
-- campaign-wide trace finality conflicts with an indefinitely evolving job; and
-- direct SQL immutability is not uniform across every campaign table.
+- issuer, security, group, segment, product, customer, geography, or channel where relevant;
+- metric, period, unit, scale, accounting basis, and scope;
+- operating or financial relationships represented by the model; and
+- rival interpretations when observations do not identify one mechanism.
 
-## Missing capabilities required by the active contract
+### Assumptions and methodologies
 
-No current public implementation proves:
+- reported fact, issuer recast, derived calculation, estimate, forecast, adjustment, analyst assumption, scenario, or sensitivity;
+- transformation, bridge, allocation, residual, and normalization method;
+- method version, rationale, uncertainty, and change condition; and
+- distinction between disclosed arithmetic and analyst interpretation.
 
-- `.xlsx` parsing into stable workbook, sheet, named-range, cell, formula, style, and dependency identities;
-- formula-preserving patching;
-- supported independent recalculation and cached-result verification;
-- exact source capture from SEC filing records;
-- host-issued source assertions;
-- versioned target-specific admissibility policy;
-- typed model-change proposals joined to host identities;
-- deterministic source-to-target admission;
-- candidate workbook versions and recalculation receipts;
-- attributed source replacement followed by recomputation;
-- scoped `USE | REJECT | AMEND` over one exact artifact and named use;
-- the ordinary-language model-update workspace;
-- a live Micron product episode; or
-- analyst usefulness, deployment, institutional authority, or governed improvement.
+### Analyst-confirmed meaning and authority
 
-## Current authority
+- attributed confirmation of the target meaning;
+- permitted source and method variants;
+- evidence cutoff and named use;
+- professional ambiguity and materiality requiring judgment;
+- exact `USE | REJECT | AMEND` scope; and
+- ancestor changes that invalidate descendants and require recomputation.
 
-The PRO owner is authorised to adopt and coordinate the experimental public-repository slice, prepare bounded worker packets, inspect diffs and tests, preserve receipts, update the decision ledger, open reviewable branches and pull requests, and kill inflated completion claims.
+The representation must be bounded to one consequential object. It must not pretend to encode a universal ontology of sell-side research or an entire workbook before earning the need.
 
-The PRO owner is not authorised to:
+## First-vertical adjudication
 
-- contact analysts, mentors, clients, or external users;
-- publish excluded private material;
-- make an investment judgment;
-- claim analyst approval;
-- deploy production;
-- spend money or provision external paid infrastructure;
-- weaken runtime or repository security;
-- promote candidate research into institutional authority; or
-- activate live self-modification.
+Updating an existing workbook remains the best next falsification surface because it supplies:
 
-`ArtifactUseDisposition.USE` in the proposed demo would authorise only the exact demo artifact for the exact named internal demonstration use. It would not confer an investment or publication decision.
+- an exact before state;
+- a bounded proposed delta;
+- visible propagation through formulas and outputs;
+- an exact correction;
+- a recalculated descendant; and
+- a measurable review burden.
 
-## Active work
+It is not established as the best commercial proposition or the natural start of the analyst's work. Model building, model adjustments, earnings work, and ad hoc research begin from different states. The conceptual representation must make those beginnings expressible without changing the authority model.
 
-Only Slice 0 of `ACTIVE_BUILD_CONTRACT.md` is authorised:
+The vertical now begins before patching: reconstruct a bounded conceptual slice, expose uncertainty, obtain attributed confirmation, then permit a proposal.
 
-> Establish whether the current environment can read a purpose-built `.xlsx`, resolve the named target, preserve declared formulas, names, styles, and original bytes, write one candidate value, run an independently observed supported recalculation engine, reopen the result, and prove that dependent cached values changed without manually fabricating them.
+## Repository operating model
 
-The authorised worker may return `PASS`, `PARTIAL`, or `FAIL`. Truthful bounded failure is preferable to a simulated success.
+Django and PostgreSQL own authenticated jobs, exact inputs, immutable run specifications, proposals, human dispositions, work orders, runtime events, artifacts, research-state transitions, restart truth, and post-custody trace joins.
 
-No product models, migrations, services, source adapters, role prompts, NTM protocols, templates, or analyst-facing UI may change in this slice.
+NTM supplies persistent session and pane lifecycle. The operator-installed Codex CLI supplies the subscribed external cognition runtime. The product does not call a model API directly.
 
-## Active blocker and first kill gate
+The path remains:
 
-The repository declares no spreadsheet library or recalculation engine. A serializer can write formula text without calculating it; an open-and-save operation can leave stale cached values. The leading hypothesis is invalid if the only apparent success comes from manually writing downstream values, relying on an unrecorded desktop application, or implementing a one-off evaluator for the fixture.
+```text
+authenticated job
+-> exact input and run specification
+-> attributed proposal and approval
+-> immutable work-order packet
+-> frozen role, workbench and skill identities
+-> allowlisted NTM/Codex launch
+-> tracked exact dispatch
+-> observed completion
+-> sealed output and attestation
+-> host validation and artifact custody
+-> human disposition and restart retrieval
+-> optional Langfuse diagnostic correlation
+```
 
-The spike must therefore establish all of the following together:
+Planner, researcher, adversarial review, synthesis, and judgment are semantic roles, not mandatory visible agents. A context split must earn independence, context economy, different tools or permissions, independently disposable output, or measured parallelism. Pane count is not evidence count.
 
-- exact input and output digests;
-- stable target named range and address;
-- original file unchanged;
-- one bounded target patch;
-- unchanged declared formula strings;
-- preserved names, relevant styles, and number formats;
-- an identified calculation engine and exact version;
-- independently changed dependent cached values;
-- zero formula errors for the fixture;
-- repeatable commands; and
-- explicit environmental dependencies and nonclaims.
+## Slice 0 result
 
-Failure on any required item prevents downstream source and UI work until the PRO adjudicates a narrower boundary, different engine, different native artifact, or product-form kill.
+Verdict: `PARTIAL`.
 
-## Prohibited impressive substitutes
+Observed on the worker environment:
 
-The active worker must not:
+- one synthetic `.xlsx` was generated and inspected through direct OOXML;
+- `FY25_REVENUE_USDM` resolved to `Model!B5`;
+- the target changed from `36,900` to `37,378` without altering the original;
+- declared formulas, named target, formats, and style semantics survived;
+- formula caches were invalidated rather than manually filled;
+- `LibreOfficeDev 26.8.0.0.alpha0` recalculated the workbook non-interactively;
+- growth became approximately `48.8511%`;
+- the mechanical EV/revenue value became approximately `3.21044x`;
+- an invalid formula became visibly detectable as `#NAME?`; and
+- two clean runs produced the same semantic OOXML content apart from ZIP timestamps.
 
-- draw or implement the model-update workspace;
-- add source, target, proposal, candidate, or authority models;
-- rewrite role prompts or activate dormant DeepResearch protocols;
-- add an agent, critic, reviewer panel, or visible topology;
-- reuse the Casebook as the product;
-- attach the manual Micron report;
-- call a generated workbook recalculated without an observed engine run;
-- write cached formula results manually;
-- claim typical sell-side workbook support from the bounded fixture;
-- install a system package or use a paid external service without explicit user authority; or
-- claim a product demo from a passing spike.
+The worker recorded `PARTIAL` because `tools/classify_loc.py` attempts to decode the authorised binary test fixture as UTF-8. The narrow workbook tests passed, while the full adversarial suite ended with one architecture setup error from that same classifier path.
 
-## Required worker return
+LibreOfficeDev is retained as a labelled calculation proxy. Its alpha status, production integration, Excel parity, and general workbook compatibility remain unresolved.
 
-The coordinating Codex agent should return the worker evidence directly to this PRO session or its successor, not through the user. The return must contain:
+## New direct-surface evidence
 
-- exact base commit and result commit or diff;
-- changed files;
-- environment and dependency versions;
-- exact commands and complete relevant outputs;
-- input and output workbook SHA-256 values;
-- target, formula, named-range, style, and dependency before/after evidence;
-- calculation engine identity, version, invocation, and exit result;
-- repeated-run result;
-- unresolved failures;
-- `PASS | PARTIAL | FAIL` recommendation; and
-- claim ceiling and nonclaims.
+Read-only inspection supplied by the user established only:
 
-The PRO must inspect the diff and receipts before changing Slice 0 status or authorising Slice 1.
+1. the desktop Chrome session is authenticated to Excel for the Web;
+2. the surface exposes `Create blank workbook` and `Upload a file`; and
+3. no cloud workbook was created, uploaded, opened, or changed during that inspection.
+
+The following remain untested:
+
+- reproducible Codex operation of a disposable workbook there;
+- interactive recalculation behaviour;
+- version or activity evidence;
+- faithful `.xlsx` download and round trip;
+- metadata and privacy consequences;
+- supported automation;
+- API authentication and consent;
+- licensing and tenancy; and
+- lawful commercial integration.
+
+Human interactive access, reproducible worker operation, and commercial integration are separate claims.
+
+## Governing method
+
+Before engineering or preserving a proxy:
+
+```text
+inventory the real surfaces already available
+-> test the least mediated surface with synthetic disposable data
+-> record edit, calculation, export, provenance and cleanup
+-> use a proxy only for capabilities the real surface cannot expose
+-> label the remaining gap
+```
+
+The workbook spike did not follow this complete order because it inspected desktop executables but not the authenticated Excel web surface. The direct-surface test now controls the next action.
+
+## Active work and ownership
+
+### Active: Worker Packet 002
+
+File: `docs/pro/worker-packets/002_EXCEL_WEB_ASSUMPTION_TEST.md`
+
+Owner: coordinating browser-capable Codex worker.
+
+PRO responsibility:
+
+- define the exact test and evidence standard;
+- preserve authority boundaries;
+- reconcile the return;
+- compare the direct surface with the LibreOffice proxy; and
+- refuse inflated integration or product claims.
+
+Worker responsibility:
+
+- use only the committed synthetic mechanical workbook;
+- create only plainly disposable isolated cloud artifacts;
+- open, edit, observe calculation, inspect synthetic version history where available, download, compare, repeat, and clean up;
+- avoid every existing personal or client workbook;
+- capture no credentials, cookies, tokens, account administration, or API consent; and
+- return the receipt directly to the PRO/coordinator channel.
+
+User responsibility: none as a relay. The user has supplied bounded authority for synthetic disposable artifacts, not existing workbooks or account administration.
+
+The PRO attempted its available connector path and found no installed Excel or OneDrive operation connector. This PRO surface cannot attach to the user's authenticated Chrome session. Execution therefore belongs to the coordinator/Codex under the committed packet rather than to the user.
+
+### Queued: Worker Packet 003
+
+File: `docs/pro/worker-packets/003_BINARY_FIXTURE_CLASSIFIER_EXTENSION.md`
+
+Owner: one fresh Codex worker after Packet 002 returns.
+
+Scope: classify a valid authorised `.xlsx` test fixture as binary test data with zero physical lines, while hostile binary content masquerading as text still fails. Rerun the unchanged workbook sequence and all mandatory checks.
+
+A classifier pass upgrades repository integration only.
+
+### PRO-owned pre-Slice 1 gate
+
+Commit the smallest conceptual-model representation contract joining artifact structure, economic meaning, methodology, assumptions, analyst confirmation, source authority, and downstream consequences. Show how the same authority model can cover an existing-model update, an adjustment, and a model-building or earnings-derived addition.
+
+No product implementation is authorised by this gate yet.
+
+## Slice 1 status
+
+Blocked.
+
+Slice 1 requires a later explicit ledger entry after:
+
+- Excel-for-the-Web assumption-test adjudication;
+- classifier-extension reconciliation or an explicit waiver;
+- a committed conceptual-model representation contract; and
+- comparison of direct Excel, OOXML/LibreOffice proxy, and remaining adapter gaps.
+
+A spreadsheet capability `PASS` cannot authorise Slice 1 by itself.
+
+## Current authority boundary
+
+The PRO may inspect the public repository, write durable artifacts, prepare bounded packets, create review branches, reconcile evidence, update the ledger, and kill inflated claims.
+
+The PRO and workers may not contact analysts or clients, inspect private workbooks, expose personal account material, make investment judgments, deploy production, spend money, grant API consent, weaken security, or promote candidate research into institutional authority.
 
 ## Evidence ceiling
 
-Current strongest claim:
+The strongest current claim is:
 
-> The repository has a credible mechanical custody spine and a committed falsifiable contract for an artifact-native Micron model-update experiment. It has not yet established native-workbook capability, semantic source admission, a corrected and recalculated candidate artifact, an ordinary live product path, analyst usefulness, or cumulative improvement.
+> On one observed worker environment, a bounded synthetic OOXML workbook can be patched and recalculated through a real LibreOfficeDev proxy with repeatable semantic results, while the direct authenticated Excel-for-the-Web surface, typical sell-side workbooks, conceptual-model understanding, source admission, product usefulness, and commercial integration remain unproved.
 
-The next result may change only the native-workbook capability claim. It cannot establish the product hypothesis by itself.
+This is not a product demo.
 
 ## Next action
 
-Issue the committed bounded workbook-capability worker packet against this checkpoint basis. Reconcile the returned code and evidence as `PASS`, `PARTIAL`, or `FAIL`. Do not begin Slice 1 until that adjudication is recorded in `DECISION_LEDGER.jsonl` and this checkpoint is refreshed.
+The coordinating Codex worker executes Worker Packet 002 against the current `agent/pro-grounding` packet commit and returns the exact evidence receipt without using the user as a relay. No classifier, source, model, prompt, runtime, or interface work begins before that return.
