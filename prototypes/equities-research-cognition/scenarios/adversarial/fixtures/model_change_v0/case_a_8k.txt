@@ -1,0 +1,10 @@
+SYNTHETIC PUBLIC TEST FIXTURE — NOT A REAL FILING
+
+Synthetic Micron Technology, Inc.
+Form 8-K earnings release exhibit
+Fiscal 2025 preliminary financial highlights
+
+Revenue (USD millions): 37,378
+
+This fixture exists only to test closed captured-source custody. It makes no
+claim about an issuer, filing, accounting treatment, or professional use.

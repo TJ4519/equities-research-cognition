@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}{{ job.company_ref }} model change{% endblock %}
+{% block content %}
+<style>
+  header nav a{display:none}
+  .change{font-variant-numeric:tabular-nums;font-size:1.08rem}
+  .history{list-style:none;padding:0}.history li{border-top:1px solid var(--line);padding:12px 0}
+</style>
+<p><a href="{% url 'model_change_jobs' %}">All model change jobs</a></p>
+<h1>{{ job.company_ref }} model change</h1>
+<p>{{ episode.objective }}</p>
+{% if message %}<section class="card"><p class="warn">{{ message }}</p></section>{% endif %}
+
+<section class="card">
+  <h2>Original model</h2>
+  <dl class="meta">
+    <dt>Workbook</dt><dd>{{ original.filename }}</dd>
+    <dt>Named use</dt><dd>{{ episode.named_use }}</dd>
+    <dt>Evidence cutoff</dt><dd>{{ episode.cutoff }}</dd>
+  </dl>
+</section>
+
+{% if object and not meaning_confirmed %}
+<section class="card">
+  <h2>Confirm the target meaning</h2>
+  <p>The inspected target is FY2025 revenue in USD millions. Confirming this meaning does not authorise a source or create a candidate.</p>
+  <form method="post" action="{% url 'model_change_confirm_meaning' job_id=job.id episode_id=episode.id %}">
+    {% csrf_token %}{{ meaning_form.as_p }}<button type="submit">Confirm meaning</button>
+  </form>
+</section>
+{% elif object and not method_authorized %}
+<section class="card">
+  <h2>Authorise the method and source rule</h2>
+  <p>Use the reported value. For this annual target, require the captured filed annual report.</p>
+  <form method="post" action="{% url 'model_change_authorize_method' job_id=job.id episode_id=episode.id %}">
+    {% csrf_token %}{{ method_form.as_p }}<button type="submit">Authorise method and source rule</button>
+  </form>
+</section>
+{% elif method_authorized and not work_authorized %}
+<section class="card">
+  <h2>Prepare the proposed change</h2>
+  <p>One worker will use only the two captured filings and return one provisional typed proposal or a refusal.</p>
+  <form method="post" action="{% url 'model_change_run' job_id=job.id episode_id=episode.id %}">
+    {% csrf_token %}{{ run_form }}<button type="submit">Run this work</button>
+  </form>
+</section>
+{% endif %}
+
+{% if source_exception %}
+<section class="card">
+  <h2>The proposed source does not fit this annual target</h2>
+  <p>The worker proposed the equal reported value from the captured 8-K. The annual-target rule requires the captured filed annual report.</p>
+  <p class="good">The original workbook is unchanged and no candidate exists.</p>
+  <form method="post" action="{% url 'model_change_use_filed_report' job_id=job.id episode_id=episode.id %}">
+    {% csrf_token %}{{ repair_form }}<button type="submit">Create a candidate using the filed annual report</button>
+  </form>
+</section>
+{% endif %}
+
+{% if candidate and calculation %}
+<section class="card">
+  <h2>Review the calculated candidate</h2>
+  <p class="change">FY2025 revenue: {{ calculation.operation_receipt.operation.before }} → {{ calculation.operation_receipt.operation.after }} USDm</p>
+  <dl class="meta">
+    <dt>Calculation</dt><dd>{{ calculation.engine_version }}</dd>
+    <dt>Warnings</dt><dd>{% if calculation.warnings %}Present{% else %}None{% endif %}</dd>
+    <dt>Formula errors</dt><dd>{% if calculation.formula_errors %}Present{% else %}None{% endif %}</dd>
+  </dl>
+  <h2>Declared consequences</h2>
+  {% for item in consequences %}
+  <p class="change">{{ item.ref }}: {{ item.before }} → {{ item.after }}</p>
+  {% endfor %}
+  {% if not disposition %}
+  <form method="post" action="{% url 'model_change_record_review' job_id=job.id episode_id=episode.id %}">
+    {% csrf_token %}{{ review_form.as_p }}<button type="submit">Record synthetic review</button>
+  </form>
+  {% else %}
+  <p class="good">Synthetic review recorded: {{ disposition.get_kind_display }}.</p>
+  {% endif %}
+</section>
+{% endif %}
+
+<section class="card">
+  <h2>History</h2>
+  <ul class="history">
+  {% for item in history %}<li><time>{{ item.when }}</time><br>{{ item.summary }}</li>
+  {% empty %}<li>The inspected original is the first retained fact.</li>{% endfor %}
+  </ul>
+</section>
+{% endblock %}

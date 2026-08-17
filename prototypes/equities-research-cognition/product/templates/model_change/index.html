@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Model change jobs{% endblock %}
+{% block content %}
+<style>header nav a{display:none}</style>
+<h1>Model change jobs</h1>
+<p class="muted">Resume a synthetic, owner-bound model change episode.</p>
+{% for job in jobs %}
+  {% for item in job.model_change_episodes.all %}
+  <a class="case-link card" href="{% url 'model_change_episode' job_id=job.id episode_id=item.id %}">
+    <h2>{{ job.company_ref }}</h2>
+    <p>{{ item.objective }}</p>
+    <p class="muted">Original artifact: {{ item.starting_artifact.filename }}</p>
+  </a>
+  {% endfor %}
+{% empty %}
+<section class="card"><p>No model change jobs are available.</p></section>
+{% endfor %}
+{% endblock %}

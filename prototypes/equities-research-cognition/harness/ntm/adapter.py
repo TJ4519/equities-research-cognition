@@ -7,6 +7,7 @@ from pathlib import Path
 import re
 import subprocess
 from typing import Mapping
+from urllib.parse import unquote, urlparse
 
 
 @dataclass(frozen=True)
@@ -153,3 +154,99 @@ class NtmAdapter:
             or re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,79}", session) is None
         ):
             raise ValueError("NTM command is outside the campaign allowlist")
+
+
+class CalculationProcessAdapter:
+    """Allowlisted subprocess boundary for one pinned office calculation binary."""
+
+    def __init__(self, binary: Path, timeout_seconds: int = 90) -> None:
+        self.binary = Path(binary)
+        self.timeout_seconds = timeout_seconds
+        if not self.binary.is_absolute():
+            raise ValueError("calculation binary must be pinned by absolute path")
+
+    def version_command(self) -> list[str]:
+        return [str(self.binary), "--version"]
+
+    def calculate_command(
+        self,
+        source: Path,
+        output_directory: Path,
+        profile_directory: Path,
+    ) -> list[str]:
+        return [
+            str(self.binary),
+            f"-env:UserInstallation={profile_directory.as_uri()}",
+            "--headless",
+            "--convert-to",
+            "xlsx",
+            "--outdir",
+            str(output_directory),
+            str(source),
+        ]
+
+    def execute(
+        self, argv: list[str], *, environment: Mapping[str, str]
+    ) -> ExecutionResult:
+        self._validate(argv)
+        try:
+            completed = subprocess.run(
+                argv,
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+                shell=False,
+                timeout=self.timeout_seconds,
+                env=dict(environment),
+            )
+            return ExecutionResult(
+                completed.returncode,
+                completed.stdout,
+                completed.stderr,
+                None,
+                False,
+            )
+        except subprocess.TimeoutExpired as exc:
+            return ExecutionResult(
+                None, exc.stdout or b"", exc.stderr or b"", None, True
+            )
+        except OSError as exc:
+            return ExecutionResult(None, b"", str(exc).encode(), None, False)
+
+    def _validate(self, argv: list[str]) -> None:
+        if (
+            not self.binary.is_file()
+            or self.binary.is_symlink()
+            or not argv
+            or argv[0] != str(self.binary)
+        ):
+            raise ValueError("calculation command does not use the pinned binary")
+        if argv == self.version_command():
+            return
+        if (
+            len(argv) != 8
+            or not argv[1].startswith("-env:UserInstallation=file://")
+            or argv[2:6] != ["--headless", "--convert-to", "xlsx", "--outdir"]
+        ):
+            raise ValueError("calculation command is outside the allowlist")
+        profile_uri = argv[1].split("=", 1)[1]
+        parsed = urlparse(profile_uri)
+        profile = Path(unquote(parsed.path))
+        output_directory = Path(argv[6])
+        source = Path(argv[7])
+        if (
+            parsed.scheme != "file"
+            or parsed.netloc
+            or not profile.is_absolute()
+            or profile.is_symlink()
+            or not profile.is_dir()
+            or not output_directory.is_absolute()
+            or output_directory.is_symlink()
+            or not output_directory.is_dir()
+            or not source.is_absolute()
+            or source.is_symlink()
+            or not source.is_file()
+            or source.suffix.lower() != ".xlsx"
+        ):
+            raise ValueError("calculation paths are outside the allowlist")

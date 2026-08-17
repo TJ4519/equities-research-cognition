@@ -3,6 +3,7 @@ from __future__ import annotations
 from hashlib import sha256
 import json
 import uuid
+from decimal import Decimal
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -17,6 +18,10 @@ def canonical_bytes(value: object) -> bytes:
 
 def canonical_digest(value: object) -> str:
     return sha256(canonical_bytes(value)).hexdigest()
+
+
+def canonical_decimal(value: object) -> str:
+    return format(Decimal(str(value)).normalize(), "f")
 
 
 class ImmutableQuerySet(models.QuerySet):
@@ -129,6 +134,7 @@ class ArtifactVersion(AppendOnlyModel):
     class Role(models.TextChoices):
         STARTING_ARTIFACT = "starting_artifact", "Starting artifact"
         SOURCE = "source", "Source"
+        CANDIDATE = "candidate", "Candidate"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     campaign = models.ForeignKey(
@@ -139,6 +145,20 @@ class ArtifactVersion(AppendOnlyModel):
     media_type = models.CharField(max_length=120)
     content = models.BinaryField()
     digest = models.CharField(max_length=64, editable=False)
+    parent = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="candidate_children",
+    )
+    candidate_from_pass = models.ForeignKey(
+        "AdmissibilityDecision",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="candidate_artifacts",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def clean(self) -> None:
@@ -151,6 +171,26 @@ class ArtifactVersion(AppendOnlyModel):
             raise ValidationError("input artifact filename is unsafe")
         if self.digest != sha256(bytes(self.content)).hexdigest():
             raise ValidationError("input artifact digest does not match exact bytes")
+        is_candidate = self.role == self.Role.CANDIDATE
+        if is_candidate != bool(self.parent_id and self.candidate_from_pass_id):
+            raise ValidationError(
+                "candidate artifact requires exact parentage and pass authority"
+            )
+        if self.parent_id:
+            decision = self.candidate_from_pass
+            proposal = decision.proposal
+            episode = proposal.episode
+            if (
+                self.parent.campaign_id != self.campaign_id
+                or decision.outcome != AdmissibilityDecision.Outcome.PASS
+                or proposal.starting_artifact_id != self.parent_id
+                or episode.starting_artifact_id != self.parent_id
+                or episode.campaign_id != self.campaign_id
+                or episode.job.owner_id != self.campaign.director_id
+            ):
+                raise ValidationError(
+                    "candidate artifact crosses its exact passing closure"
+                )
 
 
 class RunSpecVersion(AppendOnlyModel):
@@ -320,6 +360,26 @@ class WorkOrder(AppendOnlyModel):
             if self.packet != expected_packet:
                 raise ValidationError(
                     "work order packet does not match its canonical bound specification"
+                )
+        if self.protocol == "model_change_v0":
+            if self.run_spec_id or self.input_artifact_ids:
+                raise ValidationError(
+                    "model change work may use only its exact versioned inputs"
+                )
+            from .model_change.services import (
+                ModelChangeRejected,
+                canonical_model_change_packet_for_order,
+            )
+
+            try:
+                expected_packet = canonical_model_change_packet_for_order(self)
+            except ModelChangeRejected as exc:
+                raise ValidationError(
+                    "canonical model change packet is unavailable"
+                ) from exc
+            if self.packet != expected_packet:
+                raise ValidationError(
+                    "work order packet does not match its canonical model change facts"
                 )
         if self.state_basis == self.StateBasis.COMMISSION and self.input_state_id:
             raise ValidationError("commission-rooted work cannot bind a research state")
@@ -581,3 +641,802 @@ class TraceLink(AppendOnlyModel):
         )
         if self.digest != expected:
             raise ValidationError("trace link does not match its exact joined facts")
+
+
+class ResearchJob(AppendOnlyModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="model_change_jobs",
+    )
+    company_ref = models.CharField(max_length=240)
+    mandate_ref = models.CharField(max_length=240, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class ModelChangeEpisode(AppendOnlyModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    job = models.ForeignKey(
+        ResearchJob, on_delete=models.PROTECT, related_name="model_change_episodes"
+    )
+    campaign = models.OneToOneField(
+        ResearchCampaign,
+        on_delete=models.PROTECT,
+        related_name="model_change_episode",
+    )
+    objective = models.TextField()
+    named_use = models.TextField()
+    cutoff = models.DateField()
+    starting_artifact = models.ForeignKey(
+        ArtifactVersion,
+        on_delete=models.PROTECT,
+        related_name="starting_model_change_episodes",
+    )
+    input_revision = models.PositiveIntegerField(default=1)
+    digest = models.CharField(max_length=64, unique=True, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def clean(self) -> None:
+        if (
+            self.job.owner_id != self.campaign.director_id
+            or self.starting_artifact.campaign_id != self.campaign_id
+            or self.starting_artifact.role
+            != ArtifactVersion.Role.STARTING_ARTIFACT
+            or self.input_revision != 1
+        ):
+            raise ValidationError("model-change episode crosses exact job custody")
+        expected = canonical_digest(
+            {
+                "id": str(self.pk),
+                "job": str(self.job_id),
+                "campaign": str(self.campaign_id),
+                "objective": self.objective,
+                "named_use": self.named_use,
+                "cutoff": self.cutoff.isoformat(),
+                "starting_artifact": str(self.starting_artifact_id),
+                "starting_artifact_sha256": self.starting_artifact.digest,
+                "input_revision": self.input_revision,
+            }
+        )
+        if self.digest != expected:
+            raise ValidationError("model-change episode digest is not exact")
+
+
+class ArtifactManifestVersion(AppendOnlyModel):
+    class Support(models.TextChoices):
+        SUPPORTED = "SUPPORTED", "Supported"
+        UNSUPPORTED_PROFILE = "UNSUPPORTED_PROFILE", "Unsupported profile"
+        UNSUPPORTED_STRUCTURAL_OPERATION = (
+            "UNSUPPORTED_STRUCTURAL_OPERATION",
+            "Unsupported structural operation",
+        )
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    episode = models.ForeignKey(
+        ModelChangeEpisode,
+        on_delete=models.PROTECT,
+        related_name="artifact_manifests",
+    )
+    artifact = models.ForeignKey(
+        ArtifactVersion,
+        on_delete=models.PROTECT,
+        related_name="model_change_manifests",
+    )
+    adapter_profile = models.CharField(max_length=120)
+    adapter_version = models.CharField(max_length=80)
+    target_ref = models.CharField(max_length=160)
+    target_address = models.CharField(max_length=160)
+    target_value = models.DecimalField(max_digits=30, decimal_places=8)
+    target_unit = models.CharField(max_length=40)
+    allowed_operation = models.CharField(max_length=80)
+    dependency_closure = models.JSONField(default=list, editable=False)
+    formula_bindings = models.JSONField(default=dict, editable=False)
+    inspection_digest = models.CharField(max_length=64, editable=False)
+    support_status = models.CharField(
+        max_length=40, choices=Support, default=Support.SUPPORTED
+    )
+    warnings = models.JSONField(default=list, editable=False)
+    digest = models.CharField(max_length=64, unique=True, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def clean(self) -> None:
+        if (
+            self.artifact_id != self.episode.starting_artifact_id
+            or self.artifact.campaign_id != self.episode.campaign_id
+            or not isinstance(self.dependency_closure, list)
+            or len(self.dependency_closure) != 2
+            or len(set(self.dependency_closure)) != 2
+            or not isinstance(self.formula_bindings, dict)
+            or set(self.formula_bindings) != set(self.dependency_closure)
+            or not isinstance(self.warnings, list)
+        ):
+            raise ValidationError("artifact manifest exceeds the bounded profile")
+        expected = canonical_digest(
+            {
+                "id": str(self.pk),
+                "episode": str(self.episode_id),
+                "artifact": str(self.artifact_id),
+                "artifact_sha256": self.artifact.digest,
+                "adapter_profile": self.adapter_profile,
+                "adapter_version": self.adapter_version,
+                "target_ref": self.target_ref,
+                "target_address": self.target_address,
+                "target_value": canonical_decimal(self.target_value),
+                "target_unit": self.target_unit,
+                "allowed_operation": self.allowed_operation,
+                "dependency_closure": self.dependency_closure,
+                "formula_bindings": self.formula_bindings,
+                "inspection_digest": self.inspection_digest,
+                "support_status": self.support_status,
+                "warnings": self.warnings,
+            }
+        )
+        if self.digest != expected:
+            raise ValidationError("artifact manifest digest is not exact")
+
+
+class ConceptualObjectVersion(AppendOnlyModel):
+    class BindingStatus(models.TextChoices):
+        PROPOSED = "PROPOSED", "Proposed"
+        CONFIRMED = "CONFIRMED", "Confirmed"
+        PROPOSED_STRUCTURE = "PROPOSED_STRUCTURE", "Proposed structure"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    episode = models.ForeignKey(
+        ModelChangeEpisode,
+        on_delete=models.PROTECT,
+        related_name="conceptual_objects",
+    )
+    parent = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="replacement_objects",
+    )
+    manifest = models.ForeignKey(
+        ArtifactManifestVersion,
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="conceptual_objects",
+    )
+    binding_status = models.CharField(max_length=32, choices=BindingStatus)
+    economic_meaning = models.JSONField(default=dict, editable=False)
+    method_policy = models.JSONField(default=dict, editable=False)
+    claim_ceiling = models.TextField()
+    digest = models.CharField(max_length=64, unique=True, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def clean(self) -> None:
+        if self.parent_id and self.parent.episode_id != self.episode_id:
+            raise ValidationError("conceptual object parent crosses episode custody")
+        if self.manifest_id and self.manifest.episode_id != self.episode_id:
+            raise ValidationError("conceptual object manifest crosses episode custody")
+        if (
+            self.binding_status == self.BindingStatus.PROPOSED_STRUCTURE
+            and self.manifest_id is not None
+        ):
+            raise ValidationError("proposed structure cannot claim an artifact binding")
+        if not isinstance(self.economic_meaning, dict) or not isinstance(
+            self.method_policy, dict
+        ):
+            raise ValidationError("conceptual object bindings are malformed")
+        expected = canonical_digest(
+            {
+                "id": str(self.pk),
+                "episode": str(self.episode_id),
+                "parent": str(self.parent_id) if self.parent_id else None,
+                "manifest": str(self.manifest_id) if self.manifest_id else None,
+                "manifest_sha256": self.manifest.digest if self.manifest_id else None,
+                "binding_status": self.binding_status,
+                "economic_meaning": self.economic_meaning,
+                "method_policy": self.method_policy,
+                "claim_ceiling": self.claim_ceiling,
+            }
+        )
+        if self.digest != expected:
+            raise ValidationError("conceptual object digest is not exact")
+
+
+class ObjectDisposition(AppendOnlyModel):
+    class Action(models.TextChoices):
+        CONFIRM_MEANING = "CONFIRM_MEANING", "Confirm meaning"
+        AMEND_MEANING = "AMEND_MEANING", "Amend meaning"
+        AUTHORIZE_METHOD = "AUTHORIZE_METHOD", "Authorise method"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    object_version = models.ForeignKey(
+        ConceptualObjectVersion,
+        on_delete=models.PROTECT,
+        related_name="object_dispositions",
+    )
+    actor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    action = models.CharField(max_length=32, choices=Action)
+    bounded_payload = models.JSONField(default=dict, editable=False)
+    digest = models.CharField(max_length=64, unique=True, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def clean(self) -> None:
+        if self.actor_id != self.object_version.episode.job.owner_id:
+            raise ValidationError("object disposition crosses owner custody")
+        if not isinstance(self.bounded_payload, dict):
+            raise ValidationError("object disposition payload is malformed")
+        expected = canonical_digest(
+            {
+                "id": str(self.pk),
+                "object_version": str(self.object_version_id),
+                "object_sha256": self.object_version.digest,
+                "actor": self.actor_id,
+                "action": self.action,
+                "bounded_payload": self.bounded_payload,
+            }
+        )
+        if self.digest != expected:
+            raise ValidationError("object disposition digest is not exact")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=("object_version", "action"),
+                name="model_change_object_disposition_once",
+            )
+        ]
+
+
+class SourceDocumentVersion(AppendOnlyModel):
+    class DocumentClass(models.TextChoices):
+        EARNINGS_RELEASE_8K = "EARNINGS_RELEASE_8K", "8-K earnings release"
+        FILED_ANNUAL_REPORT_10K = (
+            "FILED_ANNUAL_REPORT_10K",
+            "Filed annual report",
+        )
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    episode = models.ForeignKey(
+        ModelChangeEpisode,
+        on_delete=models.PROTECT,
+        related_name="source_documents",
+    )
+    artifact = models.OneToOneField(
+        ArtifactVersion,
+        on_delete=models.PROTECT,
+        related_name="source_document",
+    )
+    document_class = models.CharField(max_length=40, choices=DocumentClass)
+    identity = models.JSONField(default=dict, editable=False)
+    access_context = models.JSONField(default=dict, editable=False)
+    digest = models.CharField(max_length=64, unique=True, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def clean(self) -> None:
+        if (
+            self.artifact.campaign_id != self.episode.campaign_id
+            or self.artifact.role != ArtifactVersion.Role.SOURCE
+            or not isinstance(self.identity, dict)
+            or not isinstance(self.access_context, dict)
+        ):
+            raise ValidationError("source document crosses exact capture custody")
+        expected = canonical_digest(
+            {
+                "id": str(self.pk),
+                "episode": str(self.episode_id),
+                "artifact": str(self.artifact_id),
+                "artifact_sha256": self.artifact.digest,
+                "document_class": self.document_class,
+                "identity": self.identity,
+                "access_context": self.access_context,
+            }
+        )
+        if self.digest != expected:
+            raise ValidationError("source document digest is not exact")
+
+
+class SourceAssertion(AppendOnlyModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    document_version = models.ForeignKey(
+        SourceDocumentVersion,
+        on_delete=models.PROTECT,
+        related_name="assertions",
+    )
+    locator = models.TextField()
+    value = models.DecimalField(max_digits=30, decimal_places=8)
+    unit = models.CharField(max_length=40)
+    dimensions = models.JSONField(default=dict, editable=False)
+    digest = models.CharField(max_length=64, unique=True, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def clean(self) -> None:
+        if not self.locator.strip() or not isinstance(self.dimensions, dict):
+            raise ValidationError("source assertion is malformed")
+        expected = canonical_digest(
+            {
+                "id": str(self.pk),
+                "document_version": str(self.document_version_id),
+                "document_sha256": self.document_version.digest,
+                "locator": self.locator,
+                "value": canonical_decimal(self.value),
+                "unit": self.unit,
+                "dimensions": self.dimensions,
+            }
+        )
+        if self.digest != expected:
+            raise ValidationError("source assertion digest is not exact")
+
+
+class ModelChangeProposal(AppendOnlyModel):
+    class ProposerKind(models.TextChoices):
+        MODEL = "MODEL", "Model"
+        HOST_DERIVED = "HOST_DERIVED", "Host-derived replacement"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    episode = models.ForeignKey(
+        ModelChangeEpisode,
+        on_delete=models.PROTECT,
+        related_name="model_change_proposals",
+    )
+    parent = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="replacement_proposals",
+    )
+    work_order = models.ForeignKey(
+        WorkOrder,
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="model_change_proposals",
+    )
+    proposer_kind = models.CharField(max_length=20, choices=ProposerKind)
+    conceptual_object = models.ForeignKey(
+        ConceptualObjectVersion,
+        on_delete=models.PROTECT,
+        related_name="model_change_proposals",
+    )
+    starting_artifact = models.ForeignKey(
+        ArtifactVersion,
+        on_delete=models.PROTECT,
+        related_name="model_change_proposals",
+    )
+    source_assertion = models.ForeignKey(
+        SourceAssertion,
+        on_delete=models.PROTECT,
+        related_name="model_change_proposals",
+    )
+    manifest = models.ForeignKey(
+        ArtifactManifestVersion,
+        on_delete=models.PROTECT,
+        related_name="model_change_proposals",
+    )
+    input_revision = models.PositiveIntegerField()
+    operation = models.JSONField(default=dict, editable=False)
+    protocol_version = models.CharField(max_length=80)
+    claim_ceiling = models.TextField()
+    closure_digest = models.CharField(max_length=64, editable=False)
+    digest = models.CharField(max_length=64, unique=True, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def clean(self) -> None:
+        if self.parent_id and self.parent.episode_id != self.episode_id:
+            raise ValidationError("model-change proposal parent crosses episode custody")
+        if (
+            self.conceptual_object.episode_id != self.episode_id
+            or self.starting_artifact_id != self.episode.starting_artifact_id
+            or self.source_assertion.document_version.episode_id != self.episode_id
+            or self.manifest.episode_id != self.episode_id
+            or self.manifest.artifact_id != self.starting_artifact_id
+            or self.input_revision != self.episode.input_revision
+            or not isinstance(self.operation, dict)
+            or self.proposer_kind == self.ProposerKind.MODEL
+            and (
+                self.work_order_id is None
+                or self.work_order.campaign_id != self.episode.campaign_id
+                or self.work_order.protocol != "model_change_v0"
+            )
+        ):
+            raise ValidationError("model-change proposal crosses its exact closure")
+        expected = canonical_digest(
+            {
+                "id": str(self.pk),
+                "episode": str(self.episode_id),
+                "parent": str(self.parent_id) if self.parent_id else None,
+                "work_order": str(self.work_order_id) if self.work_order_id else None,
+                "proposer_kind": self.proposer_kind,
+                "conceptual_object": str(self.conceptual_object_id),
+                "starting_artifact": str(self.starting_artifact_id),
+                "source_assertion": str(self.source_assertion_id),
+                "manifest": str(self.manifest_id),
+                "input_revision": self.input_revision,
+                "operation": self.operation,
+                "protocol_version": self.protocol_version,
+                "claim_ceiling": self.claim_ceiling,
+                "closure_digest": self.closure_digest,
+            }
+        )
+        if self.digest != expected:
+            raise ValidationError("model-change proposal digest is not exact")
+
+
+class AdmissibilityDecision(AppendOnlyModel):
+    class Outcome(models.TextChoices):
+        PASS = "PASS", "Pass"
+        BLOCK = "BLOCK", "Block"
+        UNSUPPORTED = "UNSUPPORTED", "Unsupported"
+        JUDGMENT_REQUIRED = "JUDGMENT_REQUIRED", "Judgment required"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    proposal = models.OneToOneField(
+        ModelChangeProposal,
+        on_delete=models.PROTECT,
+        related_name="admissibility_decision",
+    )
+    validator_version = models.CharField(max_length=80)
+    outcome = models.CharField(max_length=24, choices=Outcome)
+    reason_code = models.CharField(max_length=80)
+    closure_digest = models.CharField(max_length=64, editable=False)
+    digest = models.CharField(max_length=64, unique=True, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def clean(self) -> None:
+        if self.closure_digest != self.proposal.closure_digest:
+            raise ValidationError("admissibility decision crosses proposal closure")
+        expected = canonical_digest(
+            {
+                "id": str(self.pk),
+                "proposal": str(self.proposal_id),
+                "proposal_sha256": self.proposal.digest,
+                "validator_version": self.validator_version,
+                "outcome": self.outcome,
+                "reason_code": self.reason_code,
+                "closure_digest": self.closure_digest,
+            }
+        )
+        if self.digest != expected:
+            raise ValidationError("admissibility decision digest is not exact")
+
+
+class CalculationReceipt(AppendOnlyModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    episode = models.ForeignKey(
+        ModelChangeEpisode,
+        on_delete=models.PROTECT,
+        related_name="calculation_receipts",
+    )
+    candidate = models.OneToOneField(
+        ArtifactVersion,
+        on_delete=models.PROTECT,
+        related_name="calculation_receipt",
+    )
+    pass_decision = models.OneToOneField(
+        AdmissibilityDecision,
+        on_delete=models.PROTECT,
+        related_name="calculation_receipt",
+    )
+    manifest = models.ForeignKey(
+        ArtifactManifestVersion,
+        on_delete=models.PROTECT,
+        related_name="calculation_receipts",
+    )
+    adapter_version = models.CharField(max_length=80)
+    adapter_profile = models.CharField(max_length=120)
+    engine_identity = models.CharField(max_length=240)
+    engine_version = models.CharField(max_length=240)
+    timeout_seconds = models.PositiveIntegerField()
+    environment = models.JSONField(default=dict, editable=False)
+    operation_receipt = models.JSONField(default=dict, editable=False)
+    input_digest = models.CharField(max_length=64, editable=False)
+    output_digest = models.CharField(max_length=64, editable=False)
+    consequences = models.JSONField(default=list, editable=False)
+    warnings = models.JSONField(default=list, editable=False)
+    formula_errors = models.JSONField(default=list, editable=False)
+    closure_digest = models.CharField(max_length=64, editable=False)
+    digest = models.CharField(max_length=64, unique=True, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def clean(self) -> None:
+        proposal = self.pass_decision.proposal
+        if (
+            self.pass_decision.outcome != AdmissibilityDecision.Outcome.PASS
+            or self.candidate.candidate_from_pass_id != self.pass_decision_id
+            or self.candidate.parent_id != self.episode.starting_artifact_id
+            or self.candidate.campaign_id != self.episode.campaign_id
+            or proposal.episode_id != self.episode_id
+            or self.manifest_id != proposal.manifest_id
+            or self.input_digest != self.episode.starting_artifact.digest
+            or self.output_digest != self.candidate.digest
+            or self.closure_digest != proposal.closure_digest
+            or not isinstance(self.consequences, list)
+            or len(self.consequences) != 2
+            or not isinstance(self.warnings, list)
+            or not isinstance(self.formula_errors, list)
+        ):
+            raise ValidationError("calculation receipt crosses exact candidate custody")
+        expected = canonical_digest(
+            {
+                "id": str(self.pk),
+                "episode": str(self.episode_id),
+                "candidate": str(self.candidate_id),
+                "candidate_sha256": self.candidate.digest,
+                "pass_decision": str(self.pass_decision_id),
+                "manifest": str(self.manifest_id),
+                "adapter_version": self.adapter_version,
+                "adapter_profile": self.adapter_profile,
+                "engine_identity": self.engine_identity,
+                "engine_version": self.engine_version,
+                "timeout_seconds": self.timeout_seconds,
+                "environment": self.environment,
+                "operation_receipt": self.operation_receipt,
+                "input_digest": self.input_digest,
+                "output_digest": self.output_digest,
+                "consequences": self.consequences,
+                "warnings": self.warnings,
+                "formula_errors": self.formula_errors,
+                "closure_digest": self.closure_digest,
+            }
+        )
+        if self.digest != expected:
+            raise ValidationError("calculation receipt digest is not exact")
+
+
+class Amendment(AppendOnlyModel):
+    class Action(models.TextChoices):
+        USE_FILED_ANNUAL_REPORT = (
+            "USE_FILED_ANNUAL_REPORT",
+            "Use filed annual report",
+        )
+        AMEND_MEANING = "AMEND_MEANING", "Amend meaning"
+        AMEND_METHOD_POLICY = "AMEND_METHOD_POLICY", "Amend method policy"
+        AMEND_ASSUMPTION = "AMEND_ASSUMPTION", "Amend assumption"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    episode = models.ForeignKey(
+        ModelChangeEpisode,
+        on_delete=models.PROTECT,
+        related_name="amendments",
+    )
+    actor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    object_version = models.ForeignKey(
+        ConceptualObjectVersion,
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="amendments",
+    )
+    blocked_decision = models.ForeignKey(
+        AdmissibilityDecision,
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="amendments",
+    )
+    action = models.CharField(max_length=40, choices=Action)
+    bounded_change = models.JSONField(default=dict, editable=False)
+    rationale = models.TextField()
+    replacement_object = models.ForeignKey(
+        ConceptualObjectVersion,
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="replacement_amendments",
+    )
+    replacement_proposal = models.ForeignKey(
+        ModelChangeProposal,
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="replacement_amendments",
+    )
+    digest = models.CharField(max_length=64, unique=True, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def clean(self) -> None:
+        object_path = bool(self.object_version_id and self.replacement_object_id)
+        proposal_path = bool(
+            self.blocked_decision_id and self.replacement_proposal_id
+        )
+        if (
+            object_path == proposal_path
+            or self.actor_id != self.episode.job.owner_id
+            or self.object_version_id
+            and (
+                self.object_version.episode_id != self.episode_id
+                or self.replacement_object.episode_id != self.episode_id
+            )
+            or self.blocked_decision_id
+            and (
+                self.blocked_decision.proposal.episode_id != self.episode_id
+                or self.replacement_proposal.episode_id != self.episode_id
+            )
+            or not isinstance(self.bounded_change, dict)
+        ):
+            raise ValidationError("amendment crosses exact episode custody")
+        expected = canonical_digest(
+            {
+                "id": str(self.pk),
+                "episode": str(self.episode_id),
+                "actor": self.actor_id,
+                "object_version": str(self.object_version_id) if self.object_version_id else None,
+                "blocked_decision": str(self.blocked_decision_id) if self.blocked_decision_id else None,
+                "action": self.action,
+                "bounded_change": self.bounded_change,
+                "rationale": self.rationale,
+                "replacement_object": str(self.replacement_object_id) if self.replacement_object_id else None,
+                "replacement_proposal": str(self.replacement_proposal_id) if self.replacement_proposal_id else None,
+            }
+        )
+        if self.digest != expected:
+            raise ValidationError("amendment digest is not exact")
+
+
+class InvalidationEvent(AppendOnlyModel):
+    class DescendantType(models.TextChoices):
+        OBJECT = "OBJECT", "Conceptual object"
+        PROPOSAL = "PROPOSAL", "Proposal"
+        DECISION = "DECISION", "Decision"
+        CANDIDATE = "CANDIDATE", "Candidate"
+        CALCULATION = "CALCULATION", "Calculation receipt"
+        DISPOSITION = "DISPOSITION", "Artifact disposition"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    amendment = models.ForeignKey(
+        Amendment,
+        on_delete=models.PROTECT,
+        related_name="invalidation_events",
+    )
+    descendant_type = models.CharField(max_length=24, choices=DescendantType)
+    descendant_id = models.UUIDField()
+    descendant_digest = models.CharField(max_length=64)
+    reason = models.CharField(max_length=120)
+    closure_digest = models.CharField(max_length=64)
+    digest = models.CharField(max_length=64, unique=True, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def clean(self) -> None:
+        expected = canonical_digest(
+            {
+                "id": str(self.pk),
+                "amendment": str(self.amendment_id),
+                "descendant_type": self.descendant_type,
+                "descendant_id": str(self.descendant_id),
+                "descendant_digest": self.descendant_digest,
+                "reason": self.reason,
+                "closure_digest": self.closure_digest,
+            }
+        )
+        if self.digest != expected:
+            raise ValidationError("invalidation event digest is not exact")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=("amendment", "descendant_type", "descendant_id"),
+                name="model_change_invalidation_once",
+            )
+        ]
+
+
+class ArtifactDisposition(AppendOnlyModel):
+    class Kind(models.TextChoices):
+        SIMULATE_NAMED_USE = "SIMULATE_NAMED_USE", "Simulate named use"
+        REJECT = "REJECT", "Reject"
+        REWORK = "REWORK", "Request rework"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    episode = models.ForeignKey(
+        ModelChangeEpisode,
+        on_delete=models.PROTECT,
+        related_name="artifact_dispositions",
+    )
+    candidate = models.ForeignKey(
+        ArtifactVersion,
+        on_delete=models.PROTECT,
+        related_name="model_change_dispositions",
+    )
+    calculation_receipt = models.ForeignKey(
+        CalculationReceipt,
+        on_delete=models.PROTECT,
+        related_name="artifact_dispositions",
+    )
+    actor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    named_use = models.TextField()
+    kind = models.CharField(max_length=24, choices=Kind)
+    rationale = models.TextField(blank=True)
+    closure_digest = models.CharField(max_length=64)
+    digest = models.CharField(max_length=64, unique=True, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def clean(self) -> None:
+        if (
+            self.actor_id != self.episode.job.owner_id
+            or self.candidate.campaign_id != self.episode.campaign_id
+            or self.calculation_receipt.candidate_id != self.candidate_id
+            or self.calculation_receipt.episode_id != self.episode_id
+            or self.named_use != self.episode.named_use
+            or self.closure_digest != self.calculation_receipt.closure_digest
+            or self.calculation_receipt.formula_errors
+        ):
+            raise ValidationError("artifact disposition crosses exact candidate scope")
+        expected = canonical_digest(
+            {
+                "id": str(self.pk),
+                "episode": str(self.episode_id),
+                "candidate": str(self.candidate_id),
+                "calculation_receipt": str(self.calculation_receipt_id),
+                "actor": self.actor_id,
+                "named_use": self.named_use,
+                "kind": self.kind,
+                "rationale": self.rationale,
+                "closure_digest": self.closure_digest,
+            }
+        )
+        if self.digest != expected:
+            raise ValidationError("artifact disposition digest is not exact")
+
+
+class CorrectionRecord(AppendOnlyModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    episode = models.ForeignKey(
+        ModelChangeEpisode,
+        on_delete=models.PROTECT,
+        related_name="correction_records",
+    )
+    blocked_decision = models.ForeignKey(
+        AdmissibilityDecision,
+        on_delete=models.PROTECT,
+        related_name="correction_records",
+    )
+    amendment = models.OneToOneField(
+        Amendment,
+        on_delete=models.PROTECT,
+        related_name="correction_record",
+    )
+    replacement_proposal = models.ForeignKey(
+        ModelChangeProposal,
+        on_delete=models.PROTECT,
+        related_name="correction_records",
+    )
+    source_assertions = models.JSONField(default=list, editable=False)
+    candidate = models.ForeignKey(
+        ArtifactVersion,
+        on_delete=models.PROTECT,
+        related_name="correction_records",
+    )
+    protocol_version = models.CharField(max_length=80)
+    adapter_profile_version = models.CharField(max_length=160)
+    reason_code = models.CharField(max_length=80)
+    digest = models.CharField(max_length=64, unique=True, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def clean(self) -> None:
+        if (
+            self.blocked_decision.proposal.episode_id != self.episode_id
+            or self.amendment.episode_id != self.episode_id
+            or self.replacement_proposal.episode_id != self.episode_id
+            or self.amendment.replacement_proposal_id != self.replacement_proposal_id
+            or self.candidate.campaign_id != self.episode.campaign_id
+            or self.candidate.candidate_from_pass.proposal_id
+            != self.replacement_proposal_id
+            or self.reason_code != self.blocked_decision.reason_code
+            or not isinstance(self.source_assertions, list)
+            or len(self.source_assertions) != 2
+        ):
+            raise ValidationError("correction record crosses exact correction custody")
+        expected = canonical_digest(
+            {
+                "id": str(self.pk),
+                "episode": str(self.episode_id),
+                "blocked_decision": str(self.blocked_decision_id),
+                "amendment": str(self.amendment_id),
+                "replacement_proposal": str(self.replacement_proposal_id),
+                "source_assertions": self.source_assertions,
+                "candidate": str(self.candidate_id),
+                "protocol_version": self.protocol_version,
+                "adapter_profile_version": self.adapter_profile_version,
+                "reason_code": self.reason_code,
+            }
+        )
+        if self.digest != expected:
+            raise ValidationError("correction record digest is not exact")

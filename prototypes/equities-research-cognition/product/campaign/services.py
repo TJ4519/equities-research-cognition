@@ -86,6 +86,7 @@ PROTOCOL_FILES = {
     "adversarial_review": "adversarial_review/protocol.md",
     "synthesis": "synthesis/protocol.md",
     "judgment": "judgment/protocol.md",
+    "model_change_v0": "model_change_v0.md",
 }
 PROTOCOL_OUTPUTS = {
     "bound_work": ("outcome.json", "run-acknowledgement.json"),
@@ -99,6 +100,7 @@ PROTOCOL_OUTPUTS = {
     "adversarial_review": ("review.md",),
     "synthesis": ("synthesis.md",),
     "judgment": ("judgment.json",),
+    "model_change_v0": ("model-change-output.json", "run-acknowledgement.json"),
 }
 PLANNER_INTERPRETATION_AUTHORITY_LIMIT = "planner_interpretation_only"
 STALE_PLANNER_INPUT_MESSAGE = (
@@ -1451,6 +1453,21 @@ def _validate_runtime_contract(order: WorkOrder) -> None:
         )
         if order.packet != expected_packet:
             raise CampaignRejected("bound work packet changed from its canonical specification")
+    if order.protocol == "model_change_v0":
+        from .model_change.services import (
+            ModelChangeRejected,
+            canonical_model_change_packet_for_order,
+        )
+
+        try:
+            order.full_clean()
+            expected_packet = canonical_model_change_packet_for_order(order)
+        except (ValidationError, ModelChangeRejected) as exc:
+            raise CampaignRejected(
+                "model change work no longer matches its exact captured facts"
+            ) from exc
+        if order.packet != expected_packet:
+            raise CampaignRejected("model change work packet changed")
     try:
         _output_root(order)
     except CampaignRejected as exc:
@@ -1471,26 +1488,43 @@ def _control_files(
     output_root = _output_root(order)
     if require_open_output and not output_root.is_dir():
         raise CampaignRejected("work-order output root is unavailable at launch")
-    try:
-        trace_args = build_codex_trace_arguments(
-            base_url=settings.LANGFUSE_TARGET_BASE_URL,
-            campaign_id=str(order.campaign_id),
-            work_order_id=str(order.pk),
-            proposal_digest=order.proposal_digest,
-            role_id=str(order.logical_role_id),
-            role_contract_digest=protocol_digest,
-        )
-    except LangfuseRejected as exc:
-        raise CampaignRejected(str(exc)) from exc
+    trace_args: list[str] = []
+    if order.protocol != "model_change_v0":
+        try:
+            trace_args = build_codex_trace_arguments(
+                base_url=settings.LANGFUSE_TARGET_BASE_URL,
+                campaign_id=str(order.campaign_id),
+                work_order_id=str(order.pk),
+                proposal_digest=order.proposal_digest,
+                role_id=str(order.logical_role_id),
+                role_contract_digest=protocol_digest,
+            )
+        except LangfuseRejected as exc:
+            raise CampaignRejected(str(exc)) from exc
     codex = Path(settings.CAMPAIGN_CODEX_BINARY)
     if not codex.is_absolute() or not codex.is_file():
         raise CampaignRejected("Codex executable is not pinned")
+    project_trust_args = (
+        [
+            "-c",
+            (
+                f"projects.{json.dumps(str(PROTOTYPE_ROOT.parents[1]))}."
+                'trust_level="trusted"'
+            ),
+        ]
+        if order.protocol == "model_change_v0"
+        else []
+    )
     launcher = (
         "#!/bin/sh\nset -eu\n"
         "exec "
         + shlex.quote(str(codex))
-        + " --sandbox workspace-write --ask-for-approval never --search --cd "
+        + " --sandbox workspace-write --ask-for-approval never "
+        + ("" if order.protocol == "model_change_v0" else "--search ")
+        + "--cd "
         + shlex.quote(str(output_root))
+        + " "
+        + " ".join(shlex.quote(item) for item in project_trust_args)
         + " "
         + " ".join(shlex.quote(item) for item in trace_args)
         + ' -m "$1"\n'
@@ -1717,7 +1751,11 @@ def launch_role(
     if order.runtime_events.filter(kind=RuntimeEvent.Kind.LAUNCH).exists():
         raise CampaignRejected("work order already has a launch attempt")
     _validate_runtime_contract(order)
-    runtime_source = _preflight_langfuse_runtime(environ)
+    runtime_source = (
+        dict(environ)
+        if order.protocol == "model_change_v0"
+        else _preflight_langfuse_runtime(environ)
+    )
     _prepare_output_root(order)
     _, config = _control_files(order)
     control = control or adapter()
@@ -1736,10 +1774,13 @@ def launch_role(
             campaign.ntm_session, PROTOTYPE_ROOT, role_name, config
         )
     )
-    try:
-        environment = campaign_launch_environment(runtime_source)
-    except LangfuseRejected as exc:
-        raise CampaignRejected(str(exc)) from exc
+    if order.protocol == "model_change_v0":
+        environment = sanitized_control_environment(runtime_source)
+    else:
+        try:
+            environment = campaign_launch_environment(runtime_source)
+        except LangfuseRejected as exc:
+            raise CampaignRejected(str(exc)) from exc
     return _execute(
         campaign=campaign,
         order=order,
@@ -1895,7 +1936,7 @@ def _dispatch_path(order: WorkOrder) -> Path:
         else:
             materialized.write_bytes(content)
             materialized.chmod(0o400)
-    if order.run_spec_id:
+    if order.run_spec_id or order.protocol == "model_change_v0":
         job_inputs = {
             str(item.pk): item
             for item in ArtifactVersion.objects.filter(
@@ -1941,8 +1982,11 @@ def _dispatch_path(order: WorkOrder) -> Path:
 
 
 def _verify_materialized_bound_inputs(order: WorkOrder) -> None:
-    if order.protocol != "bound_work" or order.run_spec_id is None:
-        raise CampaignRejected("bound input verification requires exact bound work")
+    if not (
+        (order.protocol == "bound_work" and order.run_spec_id is not None)
+        or (order.protocol == "model_change_v0" and order.run_spec_id is None)
+    ):
+        raise CampaignRejected("job input verification requires exact versioned work")
     campaign_root = Path(order.campaign.artifact_root)
     input_root = campaign_root / "dispatches" / f"{order.pk}.inputs"
     if (
@@ -2189,7 +2233,37 @@ def _validate_artifact_attestation(
         raise CampaignRejected("work order lacks its required output population")
     if order.protocol == "bound_work":
         _validate_bound_outputs(order, outputs)
+    if order.protocol == "model_change_v0":
+        _validate_model_change_outputs(order, outputs)
     return value
+
+
+def _validate_model_change_outputs(
+    order: WorkOrder, outputs: Mapping[str, bytes]
+) -> None:
+    if set(outputs) != {"model-change-output.json", "run-acknowledgement.json"}:
+        raise CampaignRejected("model change work output population is not exact")
+    try:
+        acknowledgement = json.loads(outputs["run-acknowledgement.json"])
+        result = json.loads(outputs["model-change-output.json"])
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise CampaignRejected("model change work output is malformed") from exc
+    expected_acknowledgement = {
+        "schema": "model-change-run-acknowledgement/v0",
+        "episode_id": order.packet["episode"]["id"],
+        "episode_digest": order.packet["episode"]["sha256"],
+        "work_order_id": str(order.pk),
+        "closure_digest": order.packet["closure_digest"],
+        "inputs": order.packet["job_inputs"],
+        "network_policy": "closed_captured_sources",
+    }
+    if acknowledgement != expected_acknowledgement:
+        raise CampaignRejected("worker did not acknowledge the exact model change run")
+    if not isinstance(result, dict) or result.get("schema") not in {
+        "model-change-proposal/v0",
+        "model-change-refusal/v0",
+    }:
+        raise CampaignRejected("model change work output is malformed")
 
 
 def _validate_bound_outputs(
@@ -2275,13 +2349,13 @@ def collect_artifacts(campaign: ResearchCampaign, user: object) -> int:
             raise CampaignRejected(
                 "observe exact work-order completion before collecting outputs"
             )
-        if order.protocol == "bound_work":
+        if order.protocol in {"bound_work", "model_change_v0"}:
             _verify_materialized_bound_inputs(order)
         root = _seal_output_root(order)
         if root is None:
             continue
         exact_output_paths = None
-        if order.protocol == "bound_work":
+        if order.protocol in {"bound_work", "model_change_v0"}:
             contract = order.packet["output_contract"]
             exact_output_paths = set(contract["required_paths"]) | {
                 contract["attestation_path"]
