@@ -76,7 +76,7 @@ These results justify one repair cycle. They do not license integration while th
 ### Packet 008
 
 - Branch: `agent/case-a-authority-recovery-repair-v1`
-- Starting head: `3c73bf3f20676d52f862dc61c54e11d6775df0ee`
+- Starting head: `3c496b3bb0e87b8c6eb6a4f5a1a4460f7864b82e`
 - Issue: `#8`
 - Base: rejected evidence head `3d5c3157f91361bee120c10ecd4bddfda6e16296`
 - Ownership: one architectural writer over the exact database, service, projection, route and hostile-test repair surfaces
@@ -86,7 +86,7 @@ Packet 008 must make the database recompute canonical admission, require candida
 ### Packet 009
 
 - Branch: `agent/classifier-final-surface-repair-v1`
-- Starting head: `3db9d629bc2176d382b6e1fac3af8647f2cc6455`
+- Starting head: `cde37777ebdb6944b463a54d2529873c7dc03c56`
 - Issue: `#9`
 - Base: rejected evidence head `3d5c3157f91361bee120c10ecd4bddfda6e16296`
 - Ownership: classifier and focused hostile tests only
