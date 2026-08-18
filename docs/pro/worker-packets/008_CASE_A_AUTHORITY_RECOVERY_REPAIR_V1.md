@@ -1,6 +1,6 @@
 # Worker Packet 008 — Case A Authority and Recovery Repair V1
 
-Status: **authorised for one bounded repair cycle after Packet 005 rejection**.
+Status: **authorised bounded repair; not authorised for merge or integration**.
 
 Programme state: `REPAIRING` under Level 2 bounded orchestration.
 
@@ -9,12 +9,12 @@ Programme state: `REPAIRING` under Level 2 bounded orchestration.
 - Repository: `TJ4519/equities-research-cognition`
 - Rejected implementation branch: `agent/case-a-outcome-complete-v0`
 - Rejected implementation commit: `cf5685383654c00513825fc451b60221bc0117e9`
-- Rejected evidence head and authoritative repair base: `3d5c3157f91361bee120c10ecd4bddfda6e16296`
-- Worker branch: `agent/case-a-authority-recovery-repair-v1`
+- Rejected evidence head: `3d5c3157f91361bee120c10ecd4bddfda6e16296`
+- Repair branch: `agent/case-a-authority-recovery-repair-v1`
 - Governing repair contract: `docs/pro/CASE_A_BOUNDED_REPAIR_CONTRACT_V1.md`
-- Governing repair-contract commit: `21384f3bdd6510fda78f8e1d8cacae91ca7efe46`
-- Prior accepted architecture review: `99ad9412f059239c0604497b3de868b6c348370a`
-- Independent disposition of Packet 005: `REJECT_PENDING_BOUNDED_REPAIR`
+- Governing contract commit: `fa417e90aa124fed717fa72a1fc40bd44087968a`
+- Coordinator projection: `dec-2026-08-18-037`
+- Required migration: `campaign.0007_model_change_v0_repair_1`
 
 Before editing, verify:
 
@@ -24,19 +24,35 @@ git merge-base --is-ancestor 3d5c3157f91361bee120c10ecd4bddfda6e16296 HEAD
 git diff --name-status 3d5c3157f91361bee120c10ecd4bddfda6e16296...HEAD
 ```
 
-The initial branch may differ from `3d5c3157...` only by this packet, the governing repair contract, the repair adjudication receipt, and exact dispatch metadata. Stop with `MOVED_REPAIR_BASE` on any product-code, migration, prompt, runtime, fixture, test, or template drift.
+The initial branch delta may contain only this packet and `CASE_A_BOUNDED_REPAIR_CONTRACT_V1.md`. Stop with `MOVED_REPAIR_BASE` if product code, migrations, prompts, fixtures, tests, runtime, or templates moved before your work.
 
-Do not merge, rebase onto `agent/pro-grounding`, deploy, or update governing state.
+## Assignment
 
-## Worker role
+You are the sole architectural writer for one bounded repair of the rejected Case A implementation. Preserve the working joined path where evidence supports it; repair the exact authority and recovery defects; return a reviewable candidate and receipt. Do not redesign the product, add agents, broaden the workbook profile, activate direct Excel, or infer that the prior happy path was verified.
 
-One architectural writer owns this repair. Do not split the overlapping database, service, projection, and interaction changes among frontend and backend workers. Separate classifier work remains outside this packet.
+The completion object is one fresh joined synthetic episode in which:
 
-The writer must repair the exact rejected candidate rather than rebuild a different product, widen to Cases B/C, or optimise the happy path while leaving the hostile states unresolved.
+```text
+one real NTM/Codex worker returns a typed equal-value 8-K proposal
+-> PostgreSQL recomputes and stores BLOCK_WRONG_DOCUMENT_CLASS
+-> forged PASS and orphan candidate attacks fail under direct SQL
+-> one current filed-report repair either completes candidate+receipt atomically
+   or leaves the block current with a recoverable calculation-failure record
+-> repeat/concurrent repair converges on one exact result
+-> runtime failure and worker refusal survive restart with an ordinary next action
+-> candidate review shows the exact 10-K assertion, both artifact identities,
+   named synthetic use, unchanged original, equal-value explanation,
+   two consequences, engine, warnings, and formula errors
+-> disposition remains SIMULATE_NAMED_USE | REJECT | REWORK
+-> restart and feature-flag rollback preserve canonical history
+-> one correction seed is emitted without harness promotion
+```
+
+A repair that closes only the happy path, only the database trigger, only the UI, or only the classifier is a failure.
 
 ## Required read order
 
-After root and executable-package `AGENTS.md` and `ROUTE.md`, read in this order:
+After root and package `AGENTS.md` and `ROUTE.md`, read in this order:
 
 1. `PRO_RESPONSIBILITY_PROMPT.md`
 2. `docs/pro/PRO_CONSTITUTION.md`
@@ -50,310 +66,270 @@ After root and executable-package `AGENTS.md` and `ROUTE.md`, read in this order
 10. `docs/pro/UI_AND_REPOSITORY_SLOP_AUDIT.md`
 11. `docs/pro/evidence/HOSTILE_VERTICAL_REVIEW_RECEIPT.md`
 12. `docs/pro/CASE_A_OUTCOME_COMPLETE_VERTICAL_CONTRACT_V0.md`
-13. `docs/pro/CASE_A_BOUNDED_REPAIR_CONTRACT_V1.md`
-14. latest `docs/pro/DECISION_LEDGER.jsonl`
-15. latest `docs/pro/CURRENT_SEMANTIC_CHECKPOINT.md`
-16. `docs/pro/COUNTEREXAMPLE_REGISTER.md`
-17. the rejected implementation receipt at `prototypes/equities-research-cognition/docs/pro/evidence/CASE_A_IMPLEMENTATION_RECEIPT.md`
-18. current `models.py`, migrations `0005` and `0006`, model-change services/views/projections/template, tests, and classifier
-19. this packet
+13. `docs/pro/evidence/MILESTONE_1_HOSTILE_REVIEW_RECONCILIATION_RECEIPT.md`
+14. `prototypes/equities-research-cognition/docs/pro/evidence/CASE_A_IMPLEMENTATION_RECEIPT.md`
+15. `docs/pro/CASE_A_BOUNDED_REPAIR_CONTRACT_V1.md`
+16. latest `docs/pro/DECISION_LEDGER.jsonl` and `docs/pro/CURRENT_SEMANTIC_CHECKPOINT.md`
+17. current code, migrations, templates, hostile tests, and this packet
 
-Executable code and migrations govern what exists. The rejected receipt is evidence, not authority.
+The rejected receipt is evidence, not authority. Current code and the independent counterexamples govern what failed.
 
-## Findings to reproduce before editing
+## Reproduce before editing
 
-Create or run a disposable PostgreSQL verification that reproduces all six findings before writing the repair:
+Create or run bounded reproductions for all six findings and preserve commands/results in the return receipt.
 
-1. A direct-SQL forged annual-8-K `PASS` population can reach candidate insertion because the candidate guard trusts stored decision fields.
-2. Calling `repair_wrong_source()` twice on the same historical block creates duplicate repair descendants.
-3. Forcing `AdapterRejected` after repair leaves a current `PASS`, zero candidate, and no legal retry; the view can return 500.
-4. A bounded worker refusal is returned from `RunService` but disappears from canonical projection and restart.
-5. `tools/classify_loc.py` at the evidence head fails first on the unclassified package path `docs/pro/evidence/CASE_A_IMPLEMENTATION_RECEIPT.md`; the reported binary-only failure is stale.
-6. Candidate review lacks the 10-K assertion, artifact identities, named synthetic use, unchanged-original fact, and equal-value source explanation.
+### R1 — forged database PASS and candidate
 
-Record the exact reproduction commands and outcomes in the return receipt. If any finding cannot be reproduced, stop with `COUNTEREXAMPLE_NOT_REPRODUCED` and explain the divergence; do not silently repair a different system.
+Using PostgreSQL direct SQL, construct the annual 8-K proposal or an exact attacker-authored equivalent within the same episode. Prove the application gate returns `BLOCK_WRONG_DOCUMENT_CLASS`. Then insert a stored `PASS` using a noncanonical validator or false reason and insert a candidate without a calculation receipt. The rejected branch must permit the bypass before repair.
 
-## Professional outcome after repair
+Do not weaken this into an ORM-only test.
 
-The ordinary path remains the joined synthetic Micron episode, but every non-happy outcome must be recoverable:
+### R2 — repeated repair
 
-```text
-resume job and episode
--> confirm bounded meaning
--> authorise reported-value method/source policy
--> run one real closed-source NTM/Codex attempt
--> either persist runtime failure/refusal with an ordinary next action
-   or receive the equal-value 8-K proposal
--> database-recomputed BLOCK_WRONG_DOCUMENT_CLASS
--> choose “Create a candidate using the filed annual report”
--> either persist calculation failure while the block remains current and retryable
-   or atomically create one amendment, one 10-K proposal, canonical PASS,
-   one child candidate, and one matching CalculationReceipt
--> review complete source/artifact/consequence evidence
--> record SIMULATE_NAMED_USE, REJECT, or REWORK
--> restart from canonical append-only state
--> retain one correction seed without harness promotion
-```
+Call the filed-report repair twice against the same historical block. Prove the rejected branch can produce multiple amendments, replacement proposals, decisions, or candidate attempts.
 
-The packet fails if it fixes only tests, only the trigger, only the view, or only the happy path.
+### R3 — calculation failure dead end
 
-## Mandatory repair 1 — database-recomputed authority
+Force `adapter.AdapterRejected` during candidate creation after the 10-K repair begins. Prove the rejected branch leaves a current `PASS`, no candidate, no calculation receipt, returns HTTP 500 or an unhandled error, and cannot lawfully retry through the ordinary action.
 
-### Canonical SQL function
+### R4 — refusal loss
 
-Implement one versioned PostgreSQL function, conceptually:
+Return a valid `model-change-refusal/v0` from the worker path. Prove the view discards it and restart exposes neither refusal nor next action.
 
-```text
-campaign_model_change_expected_admission_v1(proposal_id uuid)
-  -> expected_outcome, expected_reason_code, expected_closure_digest
-```
+### R5 — classifier evidence mismatch
 
-It must derive the result from canonical proposal, episode, object, manifest, source assertion/document, operation, target, input revision, closure, owner/campaign relations, and invalidation rows.
+Run `tools/classify_loc.py` at the rejected evidence head and record that the first failure is the unclassified package path `docs/pro/evidence/CASE_A_IMPLEMENTATION_RECEIPT.md`, before the binary workbook. Packet 008 must not modify this tool; Packet 009 owns the repair.
 
-Required cases:
+### R6 — candidate-review evidence gap
 
-- annual target + captured 8-K -> `BLOCK`, `BLOCK_WRONG_DOCUMENT_CLASS`;
-- annual target + captured 10-K -> `PASS`, `PASS_EXACT_CLOSURE`;
-- preliminary earnings-flash target + captured 8-K -> `PASS`, `PASS_EXACT_CLOSURE`;
-- stale/invalid operation/cross-closure -> exact non-pass result.
+Render the authenticated candidate page and prove it lacks at least the exact 10-K assertion/locator, original and candidate digests, named synthetic use, explicit unchanged-original statement in the candidate section, and equal-value annual-report explanation.
 
-Numerical equality must never substitute for document identity.
+If any reproduction materially differs, stop and return `COUNTEREXAMPLE_DIVERGED` with exact evidence. Do not silently repair a different problem.
 
-### Decision insert guard
+## Product laws
 
-Add a trigger that rejects an `AdmissibilityDecision` whose validator version, outcome, reason, or closure does not exactly equal the canonical function result. `AdmissibilityGate.evaluate()` must call the same database computation.
+1. The rejected branch is evidence, not an accepted implementation.
+2. The database must recompute admissibility; stored model/application claims cannot authorise a candidate.
+3. The worker may propose; it cannot issue source, object, artifact, actor, validator, or use authority.
+4. The original workbook remains immutable.
+5. A candidate is not complete without one matching calculation receipt.
+6. Filed-report repair is one current professional action, not a reusable mutation primitive.
+7. Technical failure and bounded refusal are product states when they alter the next action.
+8. The user sees consequence and next action, not reason codes, raw packet JSON, NTM controls, or database mechanics.
+9. LibreOfficeDev remains a pinned proxy for one profile, not Excel or the product.
+10. A correction seed does not promote a harness change.
 
-The canonical validator version for repaired rows must be new and explicit, for example `model-change-admissibility/v1`; do not reuse the vulnerable `v0` identity.
+## Stable repair interfaces
 
-### Candidate and receipt guards
-
-The candidate trigger must independently call the canonical function and require recomputed `PASS`, exact current joins, and no invalidated ancestor.
-
-Add:
-
-- one-candidate-per-pass uniqueness;
-- exact candidate-parent/pass/episode/campaign/manifest closure;
-- a deferrable transaction-end guard requiring exactly one matching `CalculationReceipt` before commit; and
-- receipt guards for pass, candidate, episode, manifest, closure, input/output digests, formula-error absence, and adapter/profile identity.
-
-A direct SQL transaction that inserts only a candidate must fail at commit.
-
-## Mandatory repair 2 — single-use idempotent repair
-
-Replace the view-level sequence of `repair_wrong_source()` followed by `CandidateService.create()` with one orchestration interface, semantically:
+Internal names may differ only when the semantic boundaries below remain explicit and tests lock them.
 
 ```text
+CanonicalAdmission.expected(proposal_id)
+  -> validator_version, outcome, reason_code, closure_digest
+
+AdmissibilityDecisionService.record(proposal)
+  -> database-verified AdmissibilityDecision
+
 RepairService.create_candidate_using_filed_report(
-  actor, current_block, annual_assertion, adapter_profile, command_key
-) -> RepairResult
+    actor, blocked_decision, annual_assertion, adapter_profile, idempotency_key
+) -> RepairResult(
+    amendment, replacement_proposal, pass_decision, candidate,
+    calculation_receipt, created_or_existing
+)
+
+CandidateService.create(pass_decision, exact_parent, adapter_profile)
+  -> existing-or-new candidate + operation receipt + CalculationReceipt
+
+OutcomeService.record_runtime_failure(...)
+OutcomeService.record_worker_refusal(...)
+OutcomeService.record_calculation_failure(...)
+  -> append-only ModelChangeOutcome
+
+RunService.run(actor, order)
+  -> persisted proposal+decision | persisted refusal | persisted runtime outcome
+
+ProjectionService.resume(owner, job_id, episode_id)
+  -> current canonical state + current technical outcome + one legal next action
 ```
 
-The implementation must:
+Views render projections and submit bounded commands. They do not calculate expected admission, infer current ancestry, spawn unallowlisted processes, or create candidates directly.
 
-- lock the episode and blocked decision;
-- require the block to be current, canonical, non-invalidated, and exactly wrong-document-class;
-- derive a deterministic command key;
-- enforce one successful filed-report amendment per block;
-- enforce one replacement proposal/pass/candidate/receipt population;
-- return the existing exact result for a repeated identical command;
-- refuse divergent or stale duplicate commands; and
-- converge under concurrent duplicate submissions.
+## Required database design
 
-`CandidateService.create()` must itself be idempotent for an exact current pass and return the existing candidate/receipt when the same call already succeeded.
+### Canonical function
 
-## Mandatory repair 3 — atomic calculation and recoverable failures
+Migration 0007 installs one PostgreSQL function that computes the expected target/source result from canonical rows. Python admission calls the same database function. Exact validator version: `model-change-admissibility/v1`.
 
-The successful repair population must be atomic. The bounded V0 may hold one transaction through the pinned calculation subprocess because the timeout and profile are fixed.
+### Decision guard
 
-On `AdapterRejected`, timeout, or other bounded calculation refusal:
+A `BEFORE INSERT` decision trigger rejects validator/outcome/reason/closure values that differ from the canonical function.
 
-- roll back amendment, replacement proposal, decision, candidate, and receipt from that attempt;
-- keep the original block current;
-- append a canonical calculation-failure outcome separately;
-- render `No candidate was created. The original model is unchanged.`; and
-- expose `Retry creating the candidate`.
+### Candidate guard
 
-No bounded adapter/runtime error may escape as HTTP 500.
+A candidate insert calls the canonical function again and requires a computed current `PASS`, exact same closure and custody, no invalidation, and one candidate maximum per pass.
 
-## Mandatory repair 4 — canonical runtime/refusal/failure outcomes
+### Receipt completeness
 
-Add exactly one minimal append-only model, `ModelChangeAttemptOutcome` or an equally bounded equivalent, in migration `0007`.
+A deferred transaction constraint or equivalent proves at commit that every candidate has one exact matching calculation receipt. Direct-SQL candidate insertion without the receipt must fail at commit.
 
-Required kinds:
+### Repair uniqueness
 
-- `RUNTIME_FAILURE`;
-- `WORKER_REFUSAL`;
-- `CALCULATION_FAILURE`.
+Add database uniqueness or guards making one successful `USE_FILED_ANNUAL_REPORT` amendment/replacement chain possible per current blocked decision. Concurrent duplicate requests converge.
 
-Required data:
+### Outcome custody
 
-- episode;
-- work order or blocked decision where applicable;
-- attempt/idempotency key;
-- current closure;
-- bounded reason code;
-- safe public message;
-- retryable flag;
-- next action `RETRY_WORK`, `RETRY_CANDIDATE`, or `NONE`;
-- bounded details excluding raw stderr, secrets, tokens, cookies, and trace content;
-- digest and time.
+Add the minimum append-only outcome table and direct-SQL update/delete guards. It must represent runtime failure, worker refusal, and calculation failure with closure and next action.
 
-`RunService.run()` must persist runtime failures and `model-change-refusal/v0` results. A retry creates a new immutable attempt/work order where required; it does not mutate the old attempt.
+## Required orchestration semantics
 
-`ProjectionService.resume()` must project the current outcome and next legal action after restart and retain earlier outcomes in history without letting them override a later successful result.
+### Successful filed-report repair
 
-## Mandatory repair 5 — complete candidate-review evidence
+One orchestration service owns locking, currentness checks, amendment, replacement proposal, canonical decision, adapter work, candidate, receipt, invalidations, and idempotent result selection.
 
-The candidate view and projection must render from canonical rows:
+A successful call commits one exact chain. A repeated identical call returns it. A conflicting or stale call refuses.
 
-- original filename and full SHA-256;
-- candidate filename and full SHA-256;
-- explicit original-unchanged statement;
-- captured 10-K document identity and filing date;
-- exact assertion locator, value, and unit;
-- named synthetic use;
-- explanation that the first 8-K was blocked despite the equal number because this annual target requires the filed annual report;
-- target before/after;
-- two declared consequences;
-- calculation engine identity/version;
-- warnings and formula-error state; and
-- only `SIMULATE_NAMED_USE`, `REJECT`, or `REWORK`.
+### Calculation failure
 
-Runtime/refusal/calculation-failure states must show an ordinary next action and whether any artifact changed.
+If adapter inspection, apply, calculation, comparison, timeout, or formula checks fail:
 
-Do not expose internal UUID entry, raw JSON, validator codes, work-order packet fields, NTM controls, trace IDs, Casebook vocabulary, generic approval, or professional-reliance language.
+- no new amendment, replacement, PASS, candidate, or receipt remains current;
+- the wrong-source block remains current;
+- a `CALCULATION_FAILURE` outcome is appended after rollback;
+- the view returns a bounded response rather than HTTP 500;
+- restart says no workbook changed and offers `Retry creating the candidate`.
 
-## Stable interfaces
+### Runtime failure
 
-Internal names may differ only when these semantic interfaces remain explicit:
+A safe retryable launch/readiness/collection failure appends `RUNTIME_FAILURE`; restart offers `Retry this work`. A successor attempt preserves the prior work order and outcome.
 
-```text
-CanonicalAdmission.expected(proposal) -> outcome + reason + closure
-AdmissibilityDecisionService.record(proposal) -> canonical decision
+### Worker refusal
 
-RunService.run(actor, order) ->
-  proposal+decision | persisted refusal | persisted runtime failure
-RunService.retry(actor, prior_outcome) -> new immutable attempt
+A valid refusal appends `WORKER_REFUSAL` with exact work order, closure, protocol, reason, and next action. It creates no proposal, decision, or candidate.
 
-RepairService.create_candidate_using_filed_report(...) ->
-  existing_or_new amendment + replacement + pass + candidate + receipt
+## Exact owned files
 
-CandidateService.create(pass_decision, parent, profile) ->
-  existing_or_new candidate + receipt
-
-AttemptOutcomeService.record_runtime_failure(...)
-AttemptOutcomeService.record_refusal(...)
-AttemptOutcomeService.record_calculation_failure(...)
-
-ProjectionService.resume(...) ->
-  current professional state + current outcome + next action + immutable history
-```
-
-Views submit bounded commands and render projections. They do not decide admissibility, compile canonical authority, spawn processes, or infer current ancestry.
-
-## Exact migration and rollback mechanics
-
-Add exactly:
-
-`prototypes/equities-research-cognition/product/campaign/migrations/0007_model_change_v0_repair_1.py`
-
-Do not edit, squash, rename, or delete migrations `0005` or `0006`.
-
-Migration `0007` owns:
-
-- the attempt-outcome table/equivalent;
-- canonical admission function;
-- decision insert guard;
-- strengthened candidate and receipt guards;
-- uniqueness/idempotency constraints;
-- deferrable candidate-receipt completeness;
-- append-only direct-SQL protection for new state; and
-- fail-closed handling of inconsistent existing V0 rows.
-
-Required evidence:
-
-- fresh migration to `0007`;
-- `0004 -> 0007` with legacy rows preserved;
-- `0006 -> 0007` with a valid Case A history preserved;
-- forged/orphan V0 population detected before authority;
-- empty reverse where safe;
-- populated destructive reverse refused; and
-- flag-off code rollback preserving readable history and preventing new V0 work.
-
-## Owned files
-
-The repair writer may modify only:
+You may modify only the following existing paths:
 
 - `prototypes/equities-research-cognition/product/campaign/models.py`
-- `prototypes/equities-research-cognition/product/campaign/model_change/adapter.py`
+- `prototypes/equities-research-cognition/product/campaign/model_change/adapter.py` only for bounded typed error/result mapping; do not widen profile support
 - `prototypes/equities-research-cognition/product/campaign/model_change/forms.py`
 - `prototypes/equities-research-cognition/product/campaign/model_change/projections.py`
 - `prototypes/equities-research-cognition/product/campaign/model_change/services.py`
-- `prototypes/equities-research-cognition/product/campaign/model_change/urls.py`
+- `prototypes/equities-research-cognition/product/campaign/model_change/urls.py` only if a distinct retry command is necessary
 - `prototypes/equities-research-cognition/product/campaign/model_change/views.py`
 - `prototypes/equities-research-cognition/product/templates/model_change/episode.html`
-- `prototypes/equities-research-cognition/product/campaign/migrations/0007_model_change_v0_repair_1.py`
-- `prototypes/equities-research-cognition/scenarios/adversarial/test_model_change_v0_models.py`
-- `prototypes/equities-research-cognition/scenarios/adversarial/test_model_change_v0_services.py`
-- `prototypes/equities-research-cognition/scenarios/adversarial/test_model_change_v0_runtime.py`
-- `prototypes/equities-research-cognition/scenarios/adversarial/test_model_change_v0_ui.py`
 - `prototypes/equities-research-cognition/scenarios/adversarial/test_model_change_v0_migrations.py`
-- new `prototypes/equities-research-cognition/scenarios/adversarial/test_model_change_v0_repair.py`
-- root-level `docs/pro/evidence/CASE_A_REPAIR_1_RECEIPT.md`
+- `prototypes/equities-research-cognition/scenarios/adversarial/test_model_change_v0_models.py`
+- `prototypes/equities-research-cognition/scenarios/adversarial/test_model_change_v0_runtime.py`
+- `prototypes/equities-research-cognition/scenarios/adversarial/test_model_change_v0_services.py`
+- `prototypes/equities-research-cognition/scenarios/adversarial/test_model_change_v0_ui.py`
 
-The worker may copy this packet and the repair contract onto its branch as dispatch metadata. Those copies are not product code.
+You must add exactly:
 
-## Prohibited files and interpretations
+- `prototypes/equities-research-cognition/product/campaign/migrations/0007_model_change_v0_repair_1.py`
+- `docs/pro/evidence/CASE_A_REPAIR_1_RECEIPT.md`
+
+You may add one focused test file only when it materially improves separation:
+
+- `prototypes/equities-research-cognition/scenarios/adversarial/test_model_change_v0_repair_1.py`
+
+The packet and contract files already on the branch are read-only worker instructions.
+
+## Prohibited changes
 
 Do not modify:
 
-- migrations `0005` or `0006`;
-- `harness/ntm/adapter.py`;
-- `agents/model_change_v0.md` or any prompt/skill/workbench;
-- legacy campaign/review templates or routes;
-- source fixtures or workbook fixtures;
+- migrations `0005_model_change_v0.py` or `0006_model_change_v0_guards.py`;
+- `agents/model_change_v0.md` or any prompt, skill, workbench, model, or cognition version;
+- `harness/ntm/adapter.py` or the established process allowlist;
+- captured source fixtures or workbook fixtures;
 - `tools/classify_loc.py` or classifier tests;
-- direct-Excel packet/evidence;
-- governing ledger/checkpoint/architecture on the worker branch;
-- dependencies or deployment configuration; or
-- the rejected implementation receipt.
+- direct-Excel packets, browser automation, cloud artifacts, or account state;
+- legacy campaign/review templates or Casebook product surfaces;
+- settings except through existing feature flag behaviour;
+- decision ledger, checkpoint, governing contracts, PR text, or issues;
+- Cases B or C as product journeys;
+- harness attribution, evaluation runner, promotion, or release objects;
+- dependencies or deployment configuration.
 
-Do not:
+If a prohibited path appears necessary, stop with `OWNERSHIP_BOUNDARY_REACHED` and explain the exact interface gap.
 
-- widen to Cases B or C;
-- claim tenant isolation, Excel support, analyst usefulness, professional correctness, permission to rely, harness improvement, deployment, or verified V0;
-- simulate the real NTM/Codex return with a management command;
-- treat the fixture, proxy, trigger, or green suite as the product; or
-- ask the user to relay evidence.
+## Required migration behaviour
 
-If an owned-file boundary is insufficient, stop and return the exact required path and causal reason. Do not expand scope unilaterally.
+Migration `0007_model_change_v0_repair_1.py` must be additive over rejected `0006` and preserve legacy and rejected-branch evidence.
 
-## Required hostile tests
+Required evidence:
 
-At minimum add explicit tests for:
+1. clean database from zero through `0007`;
+2. upgrade from `campaign.0004` with legacy row preservation;
+3. upgrade from `campaign.0006` with valid V0 rows preserved;
+4. explicit failure or quarantine when forged/orphaned candidate authority exists before 0007;
+5. direct-SQL append-only enforcement for the new outcome table and repair relationships;
+6. empty reverse where safe; and
+7. populated reverse refusal/dormancy preserving evidence.
 
-1. forged `attacker/v0 PASS` annual-8-K decision/candidate rejected by direct SQL;
-2. canonical-name but wrong outcome/reason rejected;
-3. orphan candidate rejected at transaction commit;
-4. mismatched receipt rejected;
-5. duplicate candidate/pass population rejected or idempotently returned;
-6. legitimate preliminary-flash 8-K remains admissible;
-7. sequential duplicate repair creates one result;
-8. concurrent duplicate repair creates one result;
-9. stale block repair refused;
-10. forced adapter failure rolls back repair population and persists retryable calculation outcome;
-11. retry after calculation failure succeeds once;
-12. worker refusal persists and survives restart;
-13. runtime failure persists and survives restart;
-14. no bounded failure returns HTTP 500;
-15. candidate page contains every required source/artifact/use/explanation field;
-16. no forbidden product language or raw operational control appears;
-17. restart after every repaired state reconstructs exact next action; and
-18. rollback/feature-flag and migration scenarios remain evidence-preserving.
+Do not rewrite migration history to make tests easier.
 
-## Required commands and evidence
+## Mandatory hostile tests
 
-Run from the executable package:
+### P0 database authority
+
+Add tests that use raw SQL, not only ORM helpers:
+
+- canonical annual 8-K decision insert with false `PASS`;
+- false validator version;
+- false reason code;
+- stale or invalidated proposal;
+- candidate for blocked decision;
+- candidate without same-transaction receipt;
+- receipt with wrong pass, manifest, candidate, episode, closure, input/output digest, or formula status;
+- duplicate candidate for one pass;
+- legal annual 10-K and preliminary 8-K controls.
+
+### Repair uniqueness and idempotency
+
+- sequential duplicate repair;
+- concurrent duplicate repair;
+- stale/invalidated block;
+- conflicting annual assertion/profile/idempotency key;
+- duplicate candidate call after success returns the exact existing candidate/receipt.
+
+### Calculation failure and retry
+
+- force `AdapterRejected` at apply, calculate, and compare boundaries;
+- verify no stranded repair/PASS/candidate/receipt;
+- verify exact `CALCULATION_FAILURE`, ordinary message, and retry action after restart;
+- restore adapter and retry to one successful chain;
+- formula error remains non-dispositionable.
+
+### Runtime and refusal
+
+- launch/readiness/collection failure persists and restarts;
+- retry creates successor attempt without mutation;
+- valid worker refusal persists exact reason and next action;
+- stale output cannot displace a current outcome or acquire authority.
+
+### UI contract
+
+Authenticated response assertions must include:
+
+- 10-K document identity, filing date, locator, value, and unit;
+- original and candidate filenames and SHA-256 values;
+- named synthetic use;
+- original unchanged;
+- equal numeric value but wrong annual document explanation;
+- target change, exactly two consequences, adapter/engine, warnings, and formula errors;
+- correct ordinary failure/refusal text and next action.
+
+Assert absence of `USE_CANDIDATE`, approval/reliance language, raw reason codes, raw JSON, source-ID fields, NTM controls, trace IDs, and Casebook vocabulary.
+
+### Restart and rollback
+
+Exercise restart after runtime failure, refusal, block, calculation failure, successful repair, candidate disposition, and invalidation without relying on live runtime state. Feature flag off must preserve history and prevent new V0 entry.
+
+## Required command floor
+
+Run from `prototypes/equities-research-cognition`:
 
 ```text
 uv run python -W error manage.py check --fail-level WARNING
@@ -365,7 +341,7 @@ uv run python -W error manage.py test \
   scenarios.adversarial.test_model_change_v0_runtime \
   scenarios.adversarial.test_model_change_v0_ui \
   scenarios.adversarial.test_model_change_v0_migrations \
-  scenarios.adversarial.test_model_change_v0_repair -v 2
+  scenarios.adversarial.test_model_change_v0_repair_1 -v 2
 uv run python -W error manage.py test \
   scenarios.adversarial.test_owned_job_bound_execution \
   scenarios.adversarial.test_workbook_capability_spike -v 1
@@ -373,49 +349,53 @@ uv run python tools/check_boundary.py
 git diff --check
 ```
 
-The full adversarial suite and LOC classifier are not acceptance evidence until the separate final-surface classifier repair is integrated. Record their exact current outcomes without repeating the rejected receipt’s stale counts.
+Run the complete adversarial suite and classifier as evidence, but do not repair or waive classifier failure in this branch. Record the exact first classifier failure for Packet 009 reconciliation.
 
-After deterministic tests pass, execute one fresh real joined Case A episode with one NTM/Codex worker. Also execute forced runtime, refusal, and calculation-failure/retry paths. Preserve exact commands, environment versions, IDs/digests, timings, and sanitised outputs in the receipt.
+## Fresh real joined episode
 
-## Return receipt
+After deterministic tests pass, execute one entirely fresh synthetic Case A episode through real NTM/Codex under `closed_captured_sources`.
 
-Create:
+Use new job, campaign, episode, source, work order, output directory, proposal, decisions, candidate, receipt, outcomes, disposition, and correction record. Do not reuse prior evidence rows or worker outputs.
 
-`docs/pro/evidence/CASE_A_REPAIR_1_RECEIPT.md`
+Exercise at least one recoverable failure path in a separate synthetic episode and prove restart/retry.
 
-Return directly to PRO and coordinating Codex:
+Record exact model/runtime identity, work order, source, proposal, decision, candidate, receipt and correction digests. Do not expose credentials, raw traces, private service identifiers, or unrelated runtime state.
 
-- exact base, branch, implementation commit, and evidence commit;
-- changed-file audit;
-- pre-repair counterexample reproduction;
-- schema and SQL-function/trigger contract;
+## Return contract
+
+Create `docs/pro/evidence/CASE_A_REPAIR_1_RECEIPT.md` last and return directly to PRO/coordinating Codex:
+
+- exact base and result commits;
+- verdict: `PASS_FOR_INDEPENDENT_VERIFICATION`, `PARTIAL`, or `FAIL`;
+- exact changed files;
+- reproduction evidence for R1–R6;
+- database function and trigger definitions summarized with version;
 - migration fresh/upgrade/reverse evidence;
-- every hostile regression result;
-- fresh real NTM/Codex joined episode;
-- runtime/refusal/calculation-failure recovery evidence;
-- candidate-review rendering evidence;
+- every hostile-test command and count;
+- live NTM/Codex evidence and exact artifact digests;
+- failure/retry/restart evidence;
+- UI evidence fields and prohibited-language assertions;
 - rollback evidence;
-- all failures and warnings;
-- exact claim ceiling; and
-- verdict `PASS_FOR_INDEPENDENT_VERIFICATION`, `PARTIAL`, or `FAIL`.
+- classifier first failure, without claiming repair;
+- unresolved facts; and
+- claim ceiling.
 
-Do not merge or mark verified. PRO will commission a fresh independent verifier after return.
+Do not merge, fast-forward `agent/pro-grounding`, update ledger/checkpoint/issues/PR, deploy, advance direct Excel, or declare completion.
 
 ## Stop conditions
 
-Stop immediately on:
+Stop immediately when:
 
-- moved repair base;
-- inability to reproduce a named P0/P1 finding;
-- need to weaken closed-source, append-only, owner, synthetic-use, or candidate-after-pass boundaries;
-- need to edit a prohibited file;
-- inability to make the database recompute or equivalently bind canonical admission;
-- inability to transactionally join candidate and receipt;
-- second failed repair with the same causal diagnosis;
-- protected data, personal workbook, permanent credential, external release, or professional judgment dependency.
+- the initial base or owned-file set moved;
+- an R1–R6 counterexample cannot be reproduced;
+- database recomputation cannot be shared by decision and candidate guards;
+- candidate/receipt completeness cannot be enforced at commit;
+- successful repair cannot be single-use and idempotent;
+- failure/refusal still depends on flash or process memory;
+- adapter failure still leaves a current PASS or yields HTTP 500;
+- migration 0007 must rewrite 0005/0006 or destroy history;
+- a prohibited file is required;
+- the worker path cannot remain one NTM/Codex worker with search closed; or
+- the bounded profile must be widened.
 
-A bounded `FAIL` with exact evidence is preferable to another self-certifying success claim.
-
-## Claim ceiling
-
-A successful worker return establishes only a repaired synthetic candidate ready for independent hostile verification. It does not establish integration, verified V0, analyst validation, Excel compatibility, professional permission to rely, production readiness, deployment, client readiness, or harness improvement.
+A truthful `PARTIAL` or `FAIL` is acceptable. A persuasive receipt that omits a counterexample is not.
