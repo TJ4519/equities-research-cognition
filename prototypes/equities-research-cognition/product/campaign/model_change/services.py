@@ -1118,7 +1118,7 @@ class AdmissibilityGate:
             cursor.execute(
                 """
                 SELECT validator_version, outcome, reason_code, closure_digest
-                FROM campaign_model_change_expected_admission_v1(%s)
+                FROM campaign_model_change_expected_admission_v2(%s)
                 """,
                 [proposal.pk],
             )
@@ -1214,6 +1214,19 @@ def _repair_key(
     return sha256(material.encode("utf-8")).hexdigest()
 
 
+def _source_custody_exact(
+    assertion: SourceAssertion, episode: ModelChangeEpisode
+) -> bool:
+    return SourceAssertion.objects.filter(
+        pk=assertion.pk,
+        document_version__episode_id=episode.pk,
+        document_version__artifact__role=ArtifactVersion.Role.SOURCE,
+        document_version__artifact__campaign_id=episode.campaign_id,
+        document_version__episode__campaign__director_id=episode.job.owner_id,
+        document_version__artifact__campaign__director_id=episode.job.owner_id,
+    ).exists()
+
+
 class InvalidationService:
     @staticmethod
     @transaction.atomic
@@ -1230,7 +1243,7 @@ class InvalidationService:
         _owned(episode, actor)
         if (
             blocked.reason_code != "BLOCK_WRONG_DOCUMENT_CLASS"
-            or annual_assertion.document_version.episode_id != episode.pk
+            or not _source_custody_exact(annual_assertion, episode)
             or annual_assertion.document_version.document_class
             != SourceDocumentVersion.DocumentClass.FILED_ANNUAL_REPORT_10K
         ):
@@ -1682,8 +1695,16 @@ class RepairService:
                 )
                 blocked = AdmissibilityDecision.objects.select_for_update().select_related(
                     "proposal__episode__job",
+                    "proposal__episode__campaign",
                     "proposal__source_assertion__document_version",
                 ).get(pk=blocked_decision.pk)
+                if not _source_custody_exact(
+                    annual_assertion, blocked.proposal.episode
+                ):
+                    raise ModelChangeRejected(
+                        "INVALID_REPAIR",
+                        "the captured filed annual report is unavailable",
+                    )
                 existing = RepairService._existing_result(
                     actor=actor,
                     blocked=blocked,
@@ -1699,9 +1720,7 @@ class RepairService:
                         "STALE_REPAIR", "the source exception is no longer current"
                     )
                 if (
-                    annual_assertion.document_version.episode_id
-                    != blocked.proposal.episode_id
-                    or annual_assertion.document_version.document_class
+                    annual_assertion.document_version.document_class
                     != SourceDocumentVersion.DocumentClass.FILED_ANNUAL_REPORT_10K
                 ):
                     raise ModelChangeRejected(

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from io import StringIO
 from hashlib import sha256
+from datetime import date
+import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import uuid
@@ -15,7 +17,8 @@ from django.test import TransactionTestCase, override_settings
 
 OLD = [("campaign", "0004_bound_input_history_append_only")]
 REJECTED_HEAD = [("campaign", "0006_model_change_v0_guards")]
-HEAD = [("campaign", "0007_model_change_v0_repair_1")]
+V1_HEAD = [("campaign", "0007_model_change_v0_repair_1")]
+HEAD = [("campaign", "0008_model_change_v0_source_custody")]
 
 
 class ModelChangeMigrationTests(TransactionTestCase):
@@ -35,6 +38,71 @@ class ModelChangeMigrationTests(TransactionTestCase):
         self.settings_context.disable()
         self.temporary.cleanup()
         super().tearDown()
+
+    def _insert_invalid_source_document_at_v1(
+        self, *, same_owner: bool, wrong_role: bool = False
+    ) -> tuple[uuid.UUID, uuid.UUID]:
+        from django.contrib.auth import get_user_model
+        from product.campaign.models import (
+            ArtifactVersion,
+            ModelChangeEpisode,
+            ResearchCampaign,
+        )
+
+        episode = ModelChangeEpisode.objects.select_related("job__owner").get()
+        if wrong_role:
+            artifact = episode.starting_artifact
+            other_campaign_id = episode.campaign_id
+        else:
+            director = episode.job.owner
+            if not same_owner:
+                director = get_user_model().objects.create(
+                    username=f"migration-foreign-{uuid.uuid4()}"
+                )
+            other_campaign = ResearchCampaign.objects.create(
+                director=director,
+                title="Migration hostile campaign",
+                issuer_or_security="Synthetic hostile issuer",
+                equities_decision_use="Migration test",
+                evidence_cutoff=date(2025, 10, 3),
+                commissioned_question="Test source custody preflight",
+                ntm_session=f"migration-source-custody-{uuid.uuid4()}",
+                artifact_root=f"/tmp/migration-source-custody-{uuid.uuid4()}",
+            )
+            content = f"migration-source-{uuid.uuid4()}".encode()
+            artifact = ArtifactVersion.objects.create(
+                campaign=other_campaign,
+                role=ArtifactVersion.Role.SOURCE,
+                filename=f"migration-source-{uuid.uuid4()}.txt",
+                media_type="text/plain",
+                content=content,
+                digest=sha256(content).hexdigest(),
+            )
+            other_campaign_id = other_campaign.pk
+        document_id = uuid.uuid4()
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                INSERT INTO campaign_sourcedocumentversion
+                  (id, episode_id, artifact_id, document_class, identity,
+                   access_context, digest, created_at)
+                VALUES (%s, %s, %s, 'FILED_ANNUAL_REPORT_10K',
+                        %s::jsonb, '{}'::jsonb, %s, NOW())
+                """,
+                [
+                    document_id,
+                    episode.pk,
+                    artifact.pk,
+                    json.dumps({"fixture": "migration-hostile"}),
+                    uuid.uuid4().hex * 2,
+                ],
+            )
+        return document_id, other_campaign_id
+
+    def _recover_after_refused_upgrade(self) -> None:
+        with connection.cursor() as cursor:
+            cursor.execute("TRUNCATE TABLE campaign_researchcampaign CASCADE")
+        MigrationExecutor(connection).migrate(HEAD)
 
     def test_upgrade_from_0004_preserves_representative_legacy_campaign(self) -> None:
         executor = MigrationExecutor(connection)
@@ -93,6 +161,166 @@ class ModelChangeMigrationTests(TransactionTestCase):
             artifact_digest,
             NewArtifact.objects.get(pk=preserved.starting_artifact_id).digest,
         )
+
+    def test_upgrade_from_0007_preserves_valid_source_rows_exactly(self) -> None:
+        executor = MigrationExecutor(connection)
+        executor.migrate(V1_HEAD)
+        call_command(
+            "seed_model_change_v0_case_a",
+            username="valid-source-custody-owner",
+            stdout=StringIO(),
+        )
+        from product.campaign.models import SourceDocumentVersion
+
+        before = list(
+            SourceDocumentVersion.objects.order_by("pk").values_list(
+                "pk", "artifact_id", "episode_id", "digest"
+            )
+        )
+        MigrationExecutor(connection).migrate(HEAD)
+        after = list(
+            SourceDocumentVersion.objects.order_by("pk").values_list(
+                "pk", "artifact_id", "episode_id", "digest"
+            )
+        )
+        self.assertEqual(before, after)
+
+    def test_upgrade_from_0007_refuses_cross_owner_source_document(self) -> None:
+        MigrationExecutor(connection).migrate(V1_HEAD)
+        call_command(
+            "seed_model_change_v0_case_a",
+            username="cross-owner-preflight-victim",
+            stdout=StringIO(),
+        )
+        self._insert_invalid_source_document_at_v1(same_owner=False)
+        with self.assertRaisesRegex(RuntimeError, "cross-campaign source artifact"):
+            MigrationExecutor(connection).migrate(HEAD)
+        self._recover_after_refused_upgrade()
+
+    def test_upgrade_from_0007_refuses_same_owner_other_campaign(self) -> None:
+        MigrationExecutor(connection).migrate(V1_HEAD)
+        call_command(
+            "seed_model_change_v0_case_a",
+            username="same-owner-preflight-victim",
+            stdout=StringIO(),
+        )
+        self._insert_invalid_source_document_at_v1(same_owner=True)
+        with self.assertRaisesRegex(RuntimeError, "cross-campaign source artifact"):
+            MigrationExecutor(connection).migrate(HEAD)
+        self._recover_after_refused_upgrade()
+
+    def test_upgrade_from_0007_refuses_non_source_artifact(self) -> None:
+        MigrationExecutor(connection).migrate(V1_HEAD)
+        call_command(
+            "seed_model_change_v0_case_a",
+            username="wrong-role-preflight-victim",
+            stdout=StringIO(),
+        )
+        self._insert_invalid_source_document_at_v1(
+            same_owner=True, wrong_role=True
+        )
+        with self.assertRaisesRegex(RuntimeError, "non-source artifact"):
+            MigrationExecutor(connection).migrate(HEAD)
+        self._recover_after_refused_upgrade()
+
+    def test_reverse_to_0007_without_v2_authority_preserves_sources(self) -> None:
+        call_command(
+            "seed_model_change_v0_case_a",
+            username="safe-v2-reverse-owner",
+            stdout=StringIO(),
+        )
+        from product.campaign.models import SourceDocumentVersion
+
+        before = list(
+            SourceDocumentVersion.objects.order_by("pk").values_list("pk", "digest")
+        )
+        MigrationExecutor(connection).migrate(V1_HEAD)
+        self.assertEqual(
+            before,
+            list(
+                SourceDocumentVersion.objects.order_by("pk").values_list(
+                    "pk", "digest"
+                )
+            ),
+        )
+        MigrationExecutor(connection).migrate(HEAD)
+
+    def test_reverse_to_0007_refuses_v2_decision_authority(self) -> None:
+        from product.campaign.model_change.services import (
+            AdmissibilityGate,
+            ObjectService,
+            PROTOCOL_VERSION,
+            ProposalParser,
+            WorkCompiler,
+        )
+        from product.campaign.models import (
+            ModelChangeEpisode,
+            ObjectDisposition,
+            SourceAssertion,
+        )
+
+        call_command(
+            "seed_model_change_v0_case_a",
+            username="populated-v2-reverse-owner",
+            stdout=StringIO(),
+        )
+        episode = ModelChangeEpisode.objects.select_related("job__owner").get()
+        conceptual = episode.conceptual_objects.get()
+        manifest = episode.artifact_manifests.get()
+        meaning = ObjectService.disposition(
+            episode.job.owner,
+            conceptual,
+            ObjectDisposition.Action.CONFIRM_MEANING,
+            {"confirmed": True},
+        )
+        method = ObjectService.disposition(
+            episode.job.owner,
+            conceptual,
+            ObjectDisposition.Action.AUTHORIZE_METHOD,
+            {"method": "reported_value"},
+        )
+        order = WorkCompiler.compile(
+            episode,
+            conceptual,
+            [meaning, method],
+            manifest,
+            list(SourceAssertion.objects.select_related("document_version__artifact")),
+            PROTOCOL_VERSION,
+        )
+        source = next(
+            row
+            for row in order.packet["source_assertions"]
+            if row["document_class"] == "EARNINGS_RELEASE_8K"
+        )
+        proposal = ProposalParser.parse(
+            {
+                "schema": "model-change-proposal/v0",
+                "episode_id": order.packet["episode"]["id"],
+                "episode_digest": order.packet["episode"]["sha256"],
+                "input_revision": order.packet["episode"]["input_revision"],
+                "conceptual_object_id": order.packet["conceptual_object"]["id"],
+                "conceptual_object_digest": order.packet["conceptual_object"]["sha256"],
+                "starting_artifact_id": order.packet["starting_artifact"]["id"],
+                "starting_artifact_digest": order.packet["starting_artifact"]["sha256"],
+                "source_assertion_id": source["id"],
+                "operation": {
+                    "kind": order.packet["manifest"]["allowed_operation"],
+                    "target_ref": order.packet["manifest"]["target_ref"],
+                    "value": source["value"],
+                    "unit": source["unit"],
+                },
+                "claim_ceiling": order.packet["conceptual_object"]["claim_ceiling"],
+            },
+            order.packet,
+        )
+        decision = AdmissibilityGate.evaluate(proposal, order.packet["closure_digest"])
+        self.assertEqual("model-change-admissibility/v2", decision.validator_version)
+        with self.assertRaisesRegex(RuntimeError, "V2 authority exists"):
+            MigrationExecutor(connection).migrate(V1_HEAD)
+        with connection.cursor() as cursor:
+            cursor.execute("TRUNCATE TABLE campaign_researchcampaign CASCADE")
+        MigrationExecutor(connection).migrate(V1_HEAD)
+        MigrationExecutor(connection).migrate(HEAD)
 
     def test_upgrade_from_0006_refuses_forged_or_orphaned_candidate(self) -> None:
         executor = MigrationExecutor(connection)

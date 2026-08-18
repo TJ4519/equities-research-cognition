@@ -923,6 +923,8 @@ class SourceDocumentVersion(AppendOnlyModel):
         if (
             self.artifact.campaign_id != self.episode.campaign_id
             or self.artifact.role != ArtifactVersion.Role.SOURCE
+            or self.episode.campaign.director_id != self.episode.job.owner_id
+            or self.artifact.campaign.director_id != self.episode.job.owner_id
             or not isinstance(self.identity, dict)
             or not isinstance(self.access_context, dict)
         ):
@@ -957,7 +959,16 @@ class SourceAssertion(AppendOnlyModel):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def clean(self) -> None:
-        if not self.locator.strip() or not isinstance(self.dimensions, dict):
+        document = self.document_version
+        episode = document.episode
+        if (
+            not self.locator.strip()
+            or not isinstance(self.dimensions, dict)
+            or document.artifact.role != ArtifactVersion.Role.SOURCE
+            or document.artifact.campaign_id != episode.campaign_id
+            or episode.campaign.director_id != episode.job.owner_id
+            or document.artifact.campaign.director_id != episode.job.owner_id
+        ):
             raise ValidationError("source assertion is malformed")
         expected = canonical_digest(
             {
@@ -1035,6 +1046,13 @@ class ModelChangeProposal(AppendOnlyModel):
             self.conceptual_object.episode_id != self.episode_id
             or self.starting_artifact_id != self.episode.starting_artifact_id
             or self.source_assertion.document_version.episode_id != self.episode_id
+            or self.source_assertion.document_version.artifact.role
+            != ArtifactVersion.Role.SOURCE
+            or self.source_assertion.document_version.artifact.campaign_id
+            != self.episode.campaign_id
+            or self.episode.campaign.director_id != self.episode.job.owner_id
+            or self.source_assertion.document_version.artifact.campaign.director_id
+            != self.episode.job.owner_id
             or self.manifest.episode_id != self.episode_id
             or self.manifest.artifact_id != self.starting_artifact_id
             or self.input_revision != self.episode.input_revision
