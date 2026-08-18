@@ -21,9 +21,9 @@ This is a translating projection. Executable code and migrations govern what exi
 - Coordinator projection: `dec-2026-08-18-037`
 - Governing repair contract: `docs/pro/CASE_A_BOUNDED_REPAIR_CONTRACT_V1.md`
 - Product repair branch: `agent/case-a-authority-recovery-repair-v1`
-- Product repair packet head: `d10fe7b46d092fae659ea3a5232f32eb1710d2ce`
+- Product repair packet head: `3c496b3bb0e87b8c6eb6a4f5a1a4460f7864b82e`
 - Final classifier branch: `agent/classifier-final-surface-repair-v1`
-- Final classifier packet head: `58fa86001104e62c87f143a1220b0bf5018b031c`
+- Final classifier packet head: `cde37777ebdb6944b463a54d2529873c7dc03c56`
 - Product repair coordination: GitHub issue `#8`
 - Classifier repair coordination: GitHub issue `#9`
 
@@ -115,7 +115,7 @@ Packet 009 must make the final repository tree classify by adding strict UTF-8 p
 
 - Packet: `docs/pro/worker-packets/008_CASE_A_AUTHORITY_RECOVERY_REPAIR_V1.md`
 - Branch: `agent/case-a-authority-recovery-repair-v1`
-- Starting packet head: `d10fe7b46d092fae659ea3a5232f32eb1710d2ce`
+- Starting packet head: `3c496b3bb0e87b8c6eb6a4f5a1a4460f7864b82e`
 - Issue: `#8`
 - Product-code authority: yes, only for packet-owned repair files.
 - Exact migration: `campaign.0007_model_change_v0_repair_1`.
@@ -127,7 +127,7 @@ Packet 008 must first reproduce all six findings. It may not rewrite migrations 
 
 - Packet: `docs/pro/worker-packets/009_FINAL_CLASSIFIER_SURFACE_REPAIR_V1.md`
 - Branch: `agent/classifier-final-surface-repair-v1`
-- Starting packet head: `58fa86001104e62c87f143a1220b0bf5018b031c`
+- Starting packet head: `cde37777ebdb6944b463a54d2529873c7dc03c56`
 - Issue: `#9`
 - Product-code authority: none.
 - Required return: `docs/pro/evidence/FINAL_CLASSIFIER_SURFACE_REPAIR_V1_RECEIPT.md` with `PASS`, `PARTIAL`, or `FAIL`.
