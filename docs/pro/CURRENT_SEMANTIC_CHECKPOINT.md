@@ -14,7 +14,7 @@ Packet 012 is active as the only bounded work. It may repair exact process-local
 - Governing handoff branch: `agent/pro-responsibility-handoff`
 - Verified handoff commit: `c1fc568424facbb5bb8e1b6369d30a1f380ae308`
 - PRO branch: `agent/pro-grounding`
-- PRO parent basis before this checkpoint update: `5e999ae3e7733a85d6e819d27fd6b093ebca78ce`
+- PRO parent basis before this checkpoint update: `e5c0b9233b6cfd8cd901a42666dde8b930340dc9`
 - Packet 010 implementation: `7a400ae9ce6f5fff7df746908324f2c2ff5fb37b`
 - Packet 010 evidence head: `a7df89f22f1783b529d9f31654234ed6de82eb62`
 - Packet 010 status: deterministic source-custody repair accepted with exact narrowing; unmerged
@@ -27,7 +27,7 @@ Packet 012 is active as the only bounded work. It may repair exact process-local
 - Trust-repair contract: `docs/pro/CODEX_OUTPUT_ROOT_TRUST_REPAIR_CONTRACT_V0.md`
 - Packet 012: `docs/pro/worker-packets/012_CODEX_OUTPUT_ROOT_TRUST_CONTROL.md`
 - Packet 012 branch: `agent/codex-output-root-trust-control-v0`
-- Packet 012 starting head: `633cb2f4b2fdd27e7fb3a3893d35d9d0562db968`
+- Packet 012 starting head: `dd093113525645383e17cd51e7a1cff8592a624e`
 - Packet 012 coordination: GitHub issue `#11`
 
 No Packet 005, 008, 010, or 012 product/runtime code is merged into `agent/pro-grounding`. No deployment, classifier work, direct-Excel work, professional-use transition, harness promotion, or external release is authorised.
