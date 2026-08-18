@@ -6,6 +6,7 @@ from os import environ
 from pathlib import Path
 import re
 import shlex
+import stat
 from typing import Mapping
 import uuid
 
@@ -1488,6 +1489,32 @@ def _control_files(
     output_root = _output_root(order)
     if require_open_output and not output_root.is_dir():
         raise CampaignRejected("work-order output root is unavailable at launch")
+    if (
+        require_open_output
+        and order.protocol == "model_change_v0"
+        and output_root.is_symlink()
+    ):
+        raise CampaignRejected("work-order output root is a symlink")
+    if require_open_output and order.protocol == "model_change_v0":
+        campaign_root = Path(order.campaign.artifact_root)
+        try:
+            canonical_output_root = output_root.resolve(strict=True)
+            canonical_campaign_root = campaign_root.resolve(strict=True)
+        except OSError as exc:
+            raise CampaignRejected(
+                "work-order output root is unavailable at launch"
+            ) from exc
+        if (
+            canonical_output_root != output_root
+            or canonical_campaign_root != campaign_root
+        ):
+            raise CampaignRejected("work-order output root is not canonical")
+    if (
+        require_open_output
+        and order.protocol == "model_change_v0"
+        and stat.S_IMODE(output_root.stat().st_mode) != 0o700
+    ):
+        raise CampaignRejected("work-order output root is not owner-only")
     trace_args: list[str] = []
     if order.protocol != "model_change_v0":
         try:
@@ -1509,6 +1536,11 @@ def _control_files(
             "-c",
             (
                 f"projects.{json.dumps(str(PROTOTYPE_ROOT.parents[1]))}."
+                'trust_level="trusted"'
+            ),
+            "-c",
+            (
+                f"projects.{json.dumps(str(output_root))}."
                 'trust_level="trusted"'
             ),
         ]
