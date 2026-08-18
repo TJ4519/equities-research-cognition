@@ -9,6 +9,11 @@ long-context product owner. The Agentic SDLC applicability brief is optional
 and downstream: do not read it before recovering product intent and repository
 truth as required by that prompt.
 
+The active local-first product rethink lives under `docs/workspace/`. Read
+`docs/workspace/README.md` and its nested `AGENTS.md` before revising that work.
+The directory remains in plan space. Do not turn it into implementation tasks or
+code until its status changes explicitly.
+
 This repository exposes a current implementation substrate and a desired
 product direction. Do not collapse them. Existing Django models, NTM panes,
 role protocols, Langfuse traces, tests, or routes are not evidence that the
