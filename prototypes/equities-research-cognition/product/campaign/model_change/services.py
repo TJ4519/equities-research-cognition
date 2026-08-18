@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import date
 from hashlib import sha256
 import json
@@ -10,12 +11,13 @@ import uuid
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError, connection, transaction
 
 from product.campaign import services as campaign_services
 from product.campaign.models import (
     AdmissibilityDecision,
     Amendment,
+    Artifact,
     ArtifactDisposition,
     ArtifactManifestVersion,
     ArtifactVersion,
@@ -24,6 +26,7 @@ from product.campaign.models import (
     CorrectionRecord,
     InvalidationEvent,
     ModelChangeEpisode,
+    ModelChangeOutcome,
     ModelChangeProposal,
     ObjectDisposition,
     Proposal,
@@ -39,7 +42,7 @@ from . import adapter
 
 
 PROTOCOL_VERSION = "model-change-v0/2026-08-17"
-VALIDATOR_VERSION = "model-change-admissibility/v0"
+VALIDATOR_VERSION = "model-change-admissibility/v1"
 NETWORK_POLICY = "closed_captured_sources"
 ANNUAL_TARGET = "FY25_REVENUE_USDM"
 PRELIMINARY_TARGET = "FY2025_PRELIMINARY_EARNINGS_FLASH_REVENUE"
@@ -51,6 +54,17 @@ class ModelChangeRejected(Exception):
     def __init__(self, reason_code: str, message: str) -> None:
         super().__init__(message)
         self.reason_code = reason_code
+
+
+@dataclass(frozen=True)
+class RepairResult:
+    amendment: Amendment | None = None
+    replacement_proposal: ModelChangeProposal | None = None
+    pass_decision: AdmissibilityDecision | None = None
+    candidate: ArtifactVersion | None = None
+    calculation_receipt: CalculationReceipt | None = None
+    outcome: ModelChangeOutcome | None = None
+    created_or_existing: str = "created"
 
 
 def _feature_enabled() -> None:
@@ -325,6 +339,7 @@ class ObjectService:
         action: str,
         bounded_payload: Mapping[str, object],
     ) -> ObjectDisposition | tuple[Amendment, ConceptualObjectVersion]:
+        _feature_enabled()
         _owned(object_version.episode, actor)
         if _invalidated(InvalidationEvent.DescendantType.OBJECT, object_version.pk):
             raise ModelChangeRejected("STALE_OBJECT", "object meaning is historical")
@@ -419,6 +434,7 @@ class EvidenceService:
         value: object,
         dimensions: Mapping[str, object],
     ) -> SourceAssertion:
+        _feature_enabled()
         assertion_id = uuid.uuid4()
         unit = str(dimensions.get("unit", ""))
         bounded_dimensions = dict(dimensions)
@@ -726,11 +742,14 @@ class ProposalParser:
     def parse(
         worker_output: bytes | Mapping[str, object], exact_packet: Mapping[str, object]
     ) -> ModelChangeProposal | dict[str, object]:
+        _feature_enabled()
         value = _load_worker_value(worker_output)
         if value.get("schema") == "model-change-refusal/v0":
             if set(value) != {"schema", "episode_id", "reason"} or value.get(
                 "episode_id"
-            ) != exact_packet["episode"]["id"]:
+            ) != exact_packet["episode"]["id"] or not isinstance(
+                value.get("reason"), str
+            ) or not value["reason"].strip() or len(value["reason"]) > 1000:
                 raise ModelChangeRejected("MALFORMED_REFUSAL", "worker refusal is malformed")
             return value
         required = {
@@ -775,6 +794,11 @@ class ProposalParser:
         ):
             raise ModelChangeRejected("INVALID_OPERATION", "proposal operation is unavailable")
         order = WorkOrder.objects.get(pk=exact_packet["work_order_id"])
+        if ModelChangeOutcome.objects.filter(work_order=order).exists():
+            raise ModelChangeRejected(
+                "STALE_WORKER_OUTPUT",
+                "the worker output belongs to a completed attempt",
+            )
         episode = ModelChangeEpisode.objects.get(pk=bindings["episode_id"])
         conceptual = ConceptualObjectVersion.objects.get(pk=bindings["conceptual_object_id"])
         manifest = ArtifactManifestVersion.objects.get(pk=exact_packet["manifest"]["id"])
@@ -817,15 +841,209 @@ class ProposalParser:
         )
 
 
+class OutcomeService:
+    @staticmethod
+    def _record(
+        *,
+        episode: ModelChangeEpisode,
+        stage: str,
+        reason_code: str,
+        public_message: str,
+        next_action: str,
+        closure_digest: str,
+        attempt_key: str,
+        protocol_version: str,
+        technical_details: Mapping[str, object],
+        work_order: WorkOrder | None = None,
+        blocked_decision: AdmissibilityDecision | None = None,
+    ) -> ModelChangeOutcome:
+        _feature_enabled()
+        existing = ModelChangeOutcome.objects.filter(
+            stage=stage, attempt_key=attempt_key
+        ).first()
+        if existing is not None:
+            return existing
+        outcome_id = uuid.uuid4()
+        details = dict(technical_details)
+        payload = {
+            "id": str(outcome_id),
+            "episode": str(episode.pk),
+            "work_order": str(work_order.pk) if work_order else None,
+            "blocked_decision": (
+                str(blocked_decision.pk) if blocked_decision else None
+            ),
+            "stage": stage,
+            "reason_code": reason_code,
+            "public_message": public_message,
+            "next_action": next_action,
+            "closure_digest": closure_digest,
+            "attempt_key": attempt_key,
+            "protocol_version": protocol_version,
+            "technical_details": details,
+        }
+        try:
+            return _create(
+                ModelChangeOutcome,
+                {
+                    "id": outcome_id,
+                    "episode": episode,
+                    "work_order": work_order,
+                    "blocked_decision": blocked_decision,
+                    "stage": stage,
+                    "reason_code": reason_code,
+                    "public_message": public_message,
+                    "next_action": next_action,
+                    "closure_digest": closure_digest,
+                    "attempt_key": attempt_key,
+                    "protocol_version": protocol_version,
+                    "technical_details": details,
+                },
+                payload,
+            )
+        except ModelChangeRejected:
+            existing = ModelChangeOutcome.objects.filter(
+                stage=stage, attempt_key=attempt_key
+            ).first()
+            if existing is not None:
+                return existing
+            raise
+
+    @staticmethod
+    def record_runtime_failure(
+        order: WorkOrder, reason_code: str
+    ) -> ModelChangeOutcome:
+        episode = order.campaign.model_change_episode
+        return OutcomeService._record(
+            episode=episode,
+            work_order=order,
+            stage=ModelChangeOutcome.Stage.RUNTIME_FAILURE,
+            reason_code=reason_code,
+            public_message=(
+                "The work could not be completed safely. No workbook changed."
+            ),
+            next_action=ModelChangeOutcome.NextAction.RETRY_WORK,
+            closure_digest=str(order.packet["closure_digest"]),
+            attempt_key=canonical_digest(
+                {"stage": "runtime", "work_order": str(order.pk)}
+            ),
+            protocol_version=str(order.packet["protocol_version"]),
+            technical_details={"failure_stage": reason_code},
+        )
+
+    @staticmethod
+    def record_worker_refusal(
+        order: WorkOrder, refusal: Mapping[str, object]
+    ) -> ModelChangeOutcome:
+        episode = order.campaign.model_change_episode
+        reason = str(refusal["reason"]).strip()
+        return OutcomeService._record(
+            episode=episode,
+            work_order=order,
+            stage=ModelChangeOutcome.Stage.WORKER_REFUSAL,
+            reason_code="WORKER_REFUSED_BOUNDED_WORK",
+            public_message=(
+                f"The worker could not produce a bounded proposal: {reason} "
+                "No workbook changed."
+            ),
+            next_action=ModelChangeOutcome.NextAction.RETRY_WORK,
+            closure_digest=str(order.packet["closure_digest"]),
+            attempt_key=canonical_digest(
+                {"stage": "refusal", "work_order": str(order.pk)}
+            ),
+            protocol_version=str(order.packet["protocol_version"]),
+            technical_details={
+                "reason": reason,
+                "protocol_version": str(order.packet["protocol_version"]),
+            },
+        )
+
+    @staticmethod
+    def record_calculation_failure(
+        blocked_decision: AdmissibilityDecision,
+        *,
+        repair_key: str,
+        reason_code: str,
+        adapter_profile: str,
+    ) -> ModelChangeOutcome:
+        return OutcomeService._record(
+            episode=blocked_decision.proposal.episode,
+            blocked_decision=blocked_decision,
+            stage=ModelChangeOutcome.Stage.CALCULATION_FAILURE,
+            reason_code=reason_code,
+            public_message=(
+                "The candidate could not be calculated safely. "
+                "The original workbook remains unchanged."
+            ),
+            next_action=ModelChangeOutcome.NextAction.RETRY_CANDIDATE,
+            closure_digest=blocked_decision.proposal.closure_digest,
+            attempt_key=repair_key,
+            protocol_version=blocked_decision.proposal.protocol_version,
+            technical_details={
+                "failure_stage": reason_code,
+                "adapter_profile": adapter_profile,
+            },
+        )
+
+
+def _collect_model_change_artifacts(order: WorkOrder, actor: object) -> int:
+    """Collect only this finalized attempt; failed predecessors remain evidence."""
+    campaign_services.require_director(order.campaign, actor)
+    if order.protocol != "model_change_v0":
+        raise ModelChangeRejected("WRONG_PROTOCOL", "work order is unavailable")
+    if order.artifacts.exists():
+        campaign_services._stored_attestation(order)
+        return order.artifacts.count()
+    if not campaign_services._completion_observed(order):
+        raise campaign_services.CampaignRejected(
+            "observe exact work-order completion before collecting outputs"
+        )
+    campaign_services._verify_materialized_bound_inputs(order)
+    root = campaign_services._seal_output_root(order)
+    if root is None:
+        raise campaign_services.CampaignRejected(
+            "work-order output root is unavailable"
+        )
+    contract = order.packet["output_contract"]
+    files = campaign_services._output_files(
+        root,
+        exact_paths=set(contract["required_paths"]) | {contract["attestation_path"]},
+    )
+    attestation = files.pop(contract["attestation_path"], None)
+    if attestation is None:
+        raise campaign_services.CampaignRejected(
+            "work order lacks its final artifact attestation"
+        )
+    campaign_services._validate_artifact_attestation(order, attestation, files)
+    files[contract["attestation_path"]] = attestation
+    with transaction.atomic():
+        for relative, content in sorted(files.items()):
+            Artifact.objects.create(
+                campaign=order.campaign,
+                work_order=order,
+                kind=Path(relative).stem,
+                relative_path=relative,
+                version=1,
+                media_type="application/json",
+                content=content,
+                digest=sha256(content).hexdigest(),
+            )
+    return len(files)
+
+
 class RunService:
     @staticmethod
     def run(
         actor: object, order: WorkOrder
     ) -> tuple[ModelChangeProposal | dict[str, object], AdmissibilityDecision | None]:
         """Run one closed, synchronous NTM/Codex unit and admit only after custody."""
+        _feature_enabled()
         _owned(order.campaign.model_change_episode, actor)
         if order.protocol != "model_change_v0":
             raise ModelChangeRejected("WRONG_PROTOCOL", "work order is unavailable")
+        if order.model_change_outcomes.exists():
+            raise ModelChangeRejected(
+                "ATTEMPT_FINAL", "this work attempt is already complete"
+            )
         try:
             campaign_services.launch_role(order, actor)
             ready = False
@@ -871,13 +1089,17 @@ class RunService:
                     "RUNTIME_IN_PROGRESS",
                     "work is still running; its recorded state is preserved",
                 )
-            campaign_services.collect_artifacts(order.campaign, actor)
+            _collect_model_change_artifacts(order, actor)
         except campaign_services.CampaignRejected as exc:
-            raise ModelChangeRejected("RUNTIME_FAILED", str(exc)) from exc
+            return OutcomeService.record_runtime_failure(order, "RUNTIME_FAILED"), None
+        except (OSError, ValueError):
+            return OutcomeService.record_runtime_failure(order, "RUNTIME_FAILED"), None
+        except ModelChangeRejected as exc:
+            return OutcomeService.record_runtime_failure(order, exc.reason_code), None
         output = order.artifacts.get(relative_path=MODEL_OUTPUT)
         result = ProposalParser.parse(bytes(output.content), order.packet)
         if isinstance(result, dict):
-            return result, None
+            return OutcomeService.record_worker_refusal(order, result), None
         return result, AdmissibilityGate.evaluate(
             result, str(order.packet["closure_digest"])
         )
@@ -891,66 +1113,48 @@ def _invalidated(kind: str, identity: uuid.UUID) -> bool:
 
 class AdmissibilityGate:
     @staticmethod
+    def expected(proposal: ModelChangeProposal) -> dict[str, str]:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT validator_version, outcome, reason_code, closure_digest
+                FROM campaign_model_change_expected_admission_v1(%s)
+                """,
+                [proposal.pk],
+            )
+            row = cursor.fetchone()
+        if row is None or any(value is None for value in row):
+            raise ModelChangeRejected(
+                "CANONICAL_ADMISSION_UNAVAILABLE",
+                "the canonical admission result is unavailable",
+            )
+        return {
+            "validator_version": str(row[0]),
+            "outcome": str(row[1]),
+            "reason_code": str(row[2]),
+            "closure_digest": str(row[3]),
+        }
+
+    @staticmethod
     @transaction.atomic
     def evaluate(
         proposal: ModelChangeProposal, current_closure_digest: str
     ) -> AdmissibilityDecision:
-        if proposal.closure_digest != current_closure_digest or _invalidated(
-            InvalidationEvent.DescendantType.PROPOSAL, proposal.pk
-        ):
-            outcome, reason = (
-                AdmissibilityDecision.Outcome.BLOCK,
-                "BLOCK_STALE_CLOSURE",
-            )
-        else:
-            document_class = proposal.source_assertion.document_version.document_class
-            target = proposal.operation.get("target_ref")
-            expected = {
-                "kind": proposal.manifest.allowed_operation,
-                "target_ref": proposal.manifest.target_ref,
-                "value": str(proposal.source_assertion.value),
-                "unit": proposal.source_assertion.unit,
-            }
-            observed = {**proposal.operation, "value": str(proposal.operation.get("value"))}
-            if observed != expected:
-                outcome, reason = AdmissibilityDecision.Outcome.BLOCK, "BLOCK_INVALID_OPERATION"
-            elif (
-                target == ANNUAL_TARGET
-                and document_class == SourceDocumentVersion.DocumentClass.EARNINGS_RELEASE_8K
-            ):
-                outcome, reason = (
-                    AdmissibilityDecision.Outcome.BLOCK,
-                    "BLOCK_WRONG_DOCUMENT_CLASS",
-                )
-            elif (
-                target == ANNUAL_TARGET
-                and document_class == SourceDocumentVersion.DocumentClass.FILED_ANNUAL_REPORT_10K
-            ) or (
-                target == PRELIMINARY_TARGET
-                and document_class == SourceDocumentVersion.DocumentClass.EARNINGS_RELEASE_8K
-            ):
-                outcome, reason = AdmissibilityDecision.Outcome.PASS, "PASS_EXACT_CLOSURE"
-            else:
-                outcome, reason = AdmissibilityDecision.Outcome.UNSUPPORTED, "UNSUPPORTED_TARGET_SOURCE_PAIR"
+        _feature_enabled()
+        expected = AdmissibilityGate.expected(proposal)
         decision_id = uuid.uuid4()
         payload = {
             "id": str(decision_id),
             "proposal": str(proposal.pk),
             "proposal_sha256": proposal.digest,
-            "validator_version": VALIDATOR_VERSION,
-            "outcome": outcome,
-            "reason_code": reason,
-            "closure_digest": proposal.closure_digest,
+            **expected,
         }
         return _create(
             AdmissibilityDecision,
             {
                 "id": decision_id,
                 "proposal": proposal,
-                "validator_version": VALIDATOR_VERSION,
-                "outcome": outcome,
-                "reason_code": reason,
-                "closure_digest": proposal.closure_digest,
+                **expected,
             },
             payload,
         )
@@ -987,13 +1191,40 @@ def _proposal_payload(
     return operation, payload
 
 
+def _repair_key(
+    *,
+    blocked: AdmissibilityDecision,
+    annual_assertion: SourceAssertion,
+    actor: object,
+    adapter_profile: str,
+    idempotency_key: str,
+) -> str:
+    material = "|".join(
+        (
+            "repair-v1",
+            str(blocked.pk),
+            str(annual_assertion.pk),
+            str(getattr(actor, "pk", "")),
+            Amendment.Action.USE_FILED_ANNUAL_REPORT,
+            blocked.proposal.closure_digest,
+            adapter_profile,
+            idempotency_key,
+        )
+    )
+    return sha256(material.encode("utf-8")).hexdigest()
+
+
 class InvalidationService:
     @staticmethod
     @transaction.atomic
-    def repair_wrong_source(
+    def _repair_wrong_source(
         actor: object,
         blocked: AdmissibilityDecision,
         annual_assertion: SourceAssertion,
+        *,
+        repair_key: str,
+        adapter_profile: str,
+        idempotency_key: str,
     ) -> tuple[Amendment, ModelChangeProposal, AdmissibilityDecision]:
         episode = blocked.proposal.episode
         _owned(episode, actor)
@@ -1004,14 +1235,7 @@ class InvalidationService:
             != SourceDocumentVersion.DocumentClass.FILED_ANNUAL_REPORT_10K
         ):
             raise ModelChangeRejected("INVALID_REPAIR", "filed-report repair is unavailable")
-        replacement_closure = canonical_digest(
-            {
-                "prior_closure": blocked.proposal.closure_digest,
-                "actor": actor.pk,
-                "action": Amendment.Action.USE_FILED_ANNUAL_REPORT,
-                "source_assertion": annual_assertion.digest,
-            }
-        )
+        replacement_closure = repair_key
         proposal_id = uuid.uuid4()
         operation, proposal_payload = _proposal_payload(
             proposal_id,
@@ -1043,6 +1267,8 @@ class InvalidationService:
             "action_label": "Create a candidate using the filed annual report",
             "from_source_assertion": str(blocked.proposal.source_assertion_id),
             "to_source_assertion": str(annual_assertion.pk),
+            "adapter_profile": adapter_profile,
+            "idempotency_key": idempotency_key,
         }
         amendment_payload = {
             "id": str(amendment_id),
@@ -1055,6 +1281,9 @@ class InvalidationService:
             "rationale": "Use the captured filed annual report for the annual target.",
             "replacement_object": None,
             "replacement_proposal": str(replacement.pk),
+            "repair_key": repair_key,
+            "adapter_profile": adapter_profile,
+            "idempotency_key": idempotency_key,
         }
         amendment = _create(
             Amendment,
@@ -1067,6 +1296,9 @@ class InvalidationService:
                 "bounded_change": bounded,
                 "rationale": amendment_payload["rationale"],
                 "replacement_proposal": replacement,
+                "repair_key": repair_key,
+                "adapter_profile": adapter_profile,
+                "idempotency_key": idempotency_key,
             },
             amendment_payload,
         )
@@ -1107,6 +1339,7 @@ class InvalidationService:
         exact_ancestor: ConceptualObjectVersion,
         bounded_change: Mapping[str, object],
     ) -> tuple[Amendment, ConceptualObjectVersion, list[InvalidationEvent]]:
+        _feature_enabled()
         episode = exact_ancestor.episode
         _owned(episode, actor)
         meaning = {**exact_ancestor.economic_meaning, **dict(bounded_change)}
@@ -1219,6 +1452,7 @@ class CandidateService:
         exact_parent: ArtifactVersion,
         adapter_profile: Mapping[str, object],
     ) -> tuple[ArtifactVersion, dict[str, object], CalculationReceipt]:
+        _feature_enabled()
         proposal = pass_decision.proposal
         if (
             pass_decision.outcome != AdmissibilityDecision.Outcome.PASS
@@ -1227,6 +1461,24 @@ class CandidateService:
             or _invalidated(InvalidationEvent.DescendantType.DECISION, pass_decision.pk)
         ):
             raise ModelChangeRejected("PASS_REQUIRED", "current exact pass is required")
+        existing = ArtifactVersion.objects.filter(
+            role=ArtifactVersion.Role.CANDIDATE,
+            candidate_from_pass=pass_decision,
+        ).first()
+        if existing is not None:
+            receipt = getattr(existing, "calculation_receipt", None)
+            if (
+                receipt is None
+                or existing.parent_id != exact_parent.pk
+                or receipt.adapter_profile != adapter_profile.get("profile_id")
+                or receipt.closure_digest != proposal.closure_digest
+                or receipt.formula_errors
+            ):
+                raise ModelChangeRejected(
+                    "INCONSISTENT_CANDIDATE",
+                    "the existing candidate is incomplete or inconsistent",
+                )
+            return existing, dict(receipt.operation_receipt), receipt
         patched, operation_receipt = adapter.apply(
             bytes(exact_parent.content),
             [proposal.operation],
@@ -1235,6 +1487,11 @@ class CandidateService:
             expected_inspection_digest=proposal.manifest.inspection_digest,
         )
         calculated, engine = adapter.calculate(patched, adapter_profile)
+        if engine["formula_errors"]:
+            raise adapter.AdapterRejected(
+                "FORMULA_ERRORS",
+                "the calculation engine returned formula errors",
+            )
         consequences = adapter.compare(
             bytes(exact_parent.content),
             calculated,
@@ -1300,6 +1557,201 @@ class CandidateService:
         return candidate, operation_receipt, receipt
 
 
+class RepairService:
+    @staticmethod
+    def _existing_result(
+        *,
+        actor: object,
+        blocked: AdmissibilityDecision,
+        annual_assertion: SourceAssertion,
+        adapter_profile: str,
+        idempotency_key: str,
+    ) -> RepairResult | None:
+        amendment = (
+            Amendment.objects.select_related("replacement_proposal")
+            .filter(
+                blocked_decision=blocked,
+                action=Amendment.Action.USE_FILED_ANNUAL_REPORT,
+            )
+            .first()
+        )
+        if amendment is None:
+            return None
+        bounded = amendment.bounded_change
+        if (
+            amendment.actor_id != getattr(actor, "pk", None)
+            or bounded.get("to_source_assertion") != str(annual_assertion.pk)
+            or amendment.adapter_profile != adapter_profile
+            or amendment.idempotency_key != idempotency_key
+        ):
+            raise ModelChangeRejected(
+                "CONFLICTING_REPAIR",
+                "a different filed-report repair already completed",
+            )
+        replacement = amendment.replacement_proposal
+        passed = getattr(replacement, "admissibility_decision", None)
+        candidate = (
+            passed.candidate_artifacts.filter(
+                role=ArtifactVersion.Role.CANDIDATE
+            ).first()
+            if passed is not None
+            else None
+        )
+        receipt = getattr(candidate, "calculation_receipt", None) if candidate else None
+        if (
+            passed is None
+            or passed.outcome != AdmissibilityDecision.Outcome.PASS
+            or candidate is None
+            or receipt is None
+            or receipt.formula_errors
+        ):
+            raise ModelChangeRejected(
+                "INCONSISTENT_REPAIR",
+                "the existing filed-report repair is incomplete",
+            )
+        return RepairResult(
+            amendment=amendment,
+            replacement_proposal=replacement,
+            pass_decision=passed,
+            candidate=candidate,
+            calculation_receipt=receipt,
+            created_or_existing="existing",
+        )
+
+    @staticmethod
+    def _current_block(blocked: AdmissibilityDecision) -> bool:
+        episode = blocked.proposal.episode
+        if (
+            blocked.outcome != AdmissibilityDecision.Outcome.BLOCK
+            or blocked.reason_code != "BLOCK_WRONG_DOCUMENT_CLASS"
+            or _invalidated(InvalidationEvent.DescendantType.PROPOSAL, blocked.proposal_id)
+            or _invalidated(InvalidationEvent.DescendantType.DECISION, blocked.pk)
+        ):
+            return False
+        invalid_proposals = set(
+            InvalidationEvent.objects.filter(
+                amendment__episode=episode,
+                descendant_type=InvalidationEvent.DescendantType.PROPOSAL,
+            ).values_list("descendant_id", flat=True)
+        )
+        current = next(
+            (
+                proposal
+                for proposal in reversed(
+                    list(
+                        episode.model_change_proposals.order_by("created_at", "pk")
+                    )
+                )
+                if proposal.pk not in invalid_proposals
+            ),
+            None,
+        )
+        return current is not None and current.pk == blocked.proposal_id
+
+    @staticmethod
+    def create_candidate_using_filed_report(
+        actor: object,
+        blocked_decision: AdmissibilityDecision,
+        annual_assertion: SourceAssertion,
+        adapter_profile: Mapping[str, object],
+        idempotency_key: str,
+    ) -> RepairResult:
+        _feature_enabled()
+        profile_id = adapter_profile.get("profile_id")
+        if (
+            not isinstance(profile_id, str)
+            or not profile_id
+            or not isinstance(idempotency_key, str)
+            or not idempotency_key
+            or len(idempotency_key) > 120
+        ):
+            raise ModelChangeRejected(
+                "INVALID_REPAIR_COMMAND", "the filed-report repair is malformed"
+            )
+        repair_key = _repair_key(
+            blocked=blocked_decision,
+            annual_assertion=annual_assertion,
+            actor=actor,
+            adapter_profile=profile_id,
+            idempotency_key=idempotency_key,
+        )
+        try:
+            with transaction.atomic():
+                ModelChangeEpisode.objects.select_for_update().get(
+                    pk=blocked_decision.proposal.episode_id
+                )
+                blocked = AdmissibilityDecision.objects.select_for_update().select_related(
+                    "proposal__episode__job",
+                    "proposal__source_assertion__document_version",
+                ).get(pk=blocked_decision.pk)
+                existing = RepairService._existing_result(
+                    actor=actor,
+                    blocked=blocked,
+                    annual_assertion=annual_assertion,
+                    adapter_profile=profile_id,
+                    idempotency_key=idempotency_key,
+                )
+                if existing is not None:
+                    return existing
+                _owned(blocked.proposal.episode, actor)
+                if not RepairService._current_block(blocked):
+                    raise ModelChangeRejected(
+                        "STALE_REPAIR", "the source exception is no longer current"
+                    )
+                if (
+                    annual_assertion.document_version.episode_id
+                    != blocked.proposal.episode_id
+                    or annual_assertion.document_version.document_class
+                    != SourceDocumentVersion.DocumentClass.FILED_ANNUAL_REPORT_10K
+                ):
+                    raise ModelChangeRejected(
+                        "INVALID_REPAIR",
+                        "the captured filed annual report is unavailable",
+                    )
+                amendment, replacement, passed = (
+                    InvalidationService._repair_wrong_source(
+                        actor,
+                        blocked,
+                        annual_assertion,
+                        repair_key=repair_key,
+                        adapter_profile=profile_id,
+                        idempotency_key=idempotency_key,
+                    )
+                )
+                if passed.outcome != AdmissibilityDecision.Outcome.PASS:
+                    raise ModelChangeRejected(
+                        "REPAIR_BLOCKED",
+                        "the filed-report replacement did not pass",
+                    )
+                candidate, _, receipt = CandidateService.create(
+                    passed,
+                    blocked.proposal.episode.starting_artifact,
+                    adapter_profile,
+                )
+                return RepairResult(
+                    amendment=amendment,
+                    replacement_proposal=replacement,
+                    pass_decision=passed,
+                    candidate=candidate,
+                    calculation_receipt=receipt,
+                    created_or_existing="created",
+                )
+        except adapter.AdapterRejected as exc:
+            blocked = AdmissibilityDecision.objects.select_related(
+                "proposal__episode"
+            ).get(pk=blocked_decision.pk)
+            outcome = OutcomeService.record_calculation_failure(
+                blocked,
+                repair_key=repair_key,
+                reason_code=exc.reason_code,
+                adapter_profile=profile_id,
+            )
+            return RepairResult(
+                outcome=outcome,
+                created_or_existing="failure",
+            )
+
+
 class DispositionService:
     @staticmethod
     def record(
@@ -1309,6 +1761,7 @@ class DispositionService:
         kind: str,
         rationale: str = "",
     ) -> ArtifactDisposition:
+        _feature_enabled()
         receipt = candidate.calculation_receipt
         episode = receipt.episode
         _owned(episode, actor)
@@ -1354,6 +1807,7 @@ class CorrectionService:
         candidate: ArtifactVersion,
         versions: Mapping[str, str],
     ) -> CorrectionRecord:
+        _feature_enabled()
         if set(versions) != {"protocol", "adapter_profile"}:
             raise ModelChangeRejected("INVALID_SEED", "correction versions are malformed")
         record_id = uuid.uuid4()
@@ -1469,6 +1923,73 @@ class ProjectionService:
                 ),
                 None,
             )
+        work_order = episode.campaign.work_orders.filter(
+            protocol="model_change_v0"
+        ).order_by("created_at", "pk").last()
+        outcomes = list(
+            episode.model_change_outcomes.select_related(
+                "work_order", "blocked_decision"
+            ).order_by("created_at", "pk")
+        )
+        technical_outcome = None
+        for item in reversed(outcomes):
+            if (
+                item.stage == ModelChangeOutcome.Stage.CALCULATION_FAILURE
+                and candidate is None
+                and decision is not None
+                and item.blocked_decision_id == decision.pk
+            ):
+                technical_outcome = item
+                break
+            if (
+                item.stage
+                in {
+                    ModelChangeOutcome.Stage.RUNTIME_FAILURE,
+                    ModelChangeOutcome.Stage.WORKER_REFUSAL,
+                }
+                and work_order is not None
+                and item.work_order_id == work_order.pk
+                and not ModelChangeProposal.objects.filter(
+                    work_order=work_order
+                ).exists()
+            ):
+                technical_outcome = item
+                break
+        next_action = (
+            technical_outcome.next_action
+            if technical_outcome is not None
+            else ModelChangeOutcome.NextAction.NONE
+        )
+        next_action_key = None
+        if (
+            decision is not None
+            and decision.reason_code == "BLOCK_WRONG_DOCUMENT_CLASS"
+            and candidate is None
+        ):
+            basis = (
+                {"outcome": technical_outcome.digest, "action": "retry-candidate"}
+                if technical_outcome
+                and technical_outcome.stage
+                == ModelChangeOutcome.Stage.CALCULATION_FAILURE
+                else {"block": decision.digest, "action": "filed-report"}
+            )
+            next_action_key = canonical_digest(basis)
+        candidate_source = (
+            candidate.candidate_from_pass.proposal.source_assertion
+            if candidate is not None
+            else None
+        )
+        historical_block = (
+            AdmissibilityDecision.objects.select_related(
+                "proposal__source_assertion__document_version__artifact"
+            )
+            .filter(
+                proposal__episode=episode,
+                reason_code="BLOCK_WRONG_DOCUMENT_CLASS",
+            )
+            .order_by("created_at", "pk")
+            .first()
+        )
         return {
             "job": episode.job,
             "episode": episode,
@@ -1481,14 +2002,21 @@ class ProjectionService:
             )
             if current_object
             else [],
-            "work_order": episode.campaign.work_orders.filter(
-                protocol="model_change_v0"
-            ).order_by("created_at", "pk").last(),
+            "work_order": work_order,
             "proposal": current_proposal,
             "decision": decision,
             "candidate": candidate,
             "calculation": calculation,
             "disposition": disposition,
+            "candidate_source": candidate_source,
+            "blocked_source": (
+                historical_block.proposal.source_assertion
+                if historical_block
+                else None
+            ),
+            "technical_outcome": technical_outcome,
+            "next_action": next_action,
+            "next_action_key": next_action_key,
             "history": {
                 "objects": objects,
                 "proposals": proposals,
@@ -1506,5 +2034,6 @@ class ProjectionService:
                 "dispositions": list(
                     episode.artifact_dispositions.order_by("created_at", "pk")
                 ),
+                "outcomes": outcomes,
             },
         }

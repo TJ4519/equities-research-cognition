@@ -10,6 +10,7 @@ def episode_page(state: dict[str, object]) -> dict[str, object]:
     decision = state["decision"]
     calculation = state["calculation"]
     disposition = state["disposition"]
+    technical_outcome = state["technical_outcome"]
     actions = {item.action for item in authorities}
     history = []
     for item in state["history"]["objects"]:
@@ -42,6 +43,8 @@ def episode_page(state: dict[str, object]) -> dict[str, object]:
                 "summary": f"Candidate review recorded: {item.get_kind_display()}.",
             }
         )
+    for item in state["history"]["outcomes"]:
+        history.append({"when": item.created_at, "summary": item.public_message})
     history.sort(key=lambda row: row["when"])
     return {
         "job": state["job"],
@@ -55,8 +58,13 @@ def episode_page(state: dict[str, object]) -> dict[str, object]:
         if decision and decision.reason_code == "BLOCK_WRONG_DOCUMENT_CLASS"
         else None,
         "candidate": state["candidate"],
+        "candidate_source": state["candidate_source"],
+        "blocked_source": state["blocked_source"],
         "calculation": calculation,
         "consequences": calculation.consequences if calculation else [],
         "disposition": disposition,
+        "technical_outcome": technical_outcome,
+        "next_action": state["next_action"],
+        "next_action_key": state["next_action_key"],
         "history": history,
     }

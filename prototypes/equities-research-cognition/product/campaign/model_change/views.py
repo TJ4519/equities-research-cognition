@@ -24,13 +24,12 @@ from .forms import (
 )
 from .projections import episode_page
 from .services import (
-    CandidateService,
     DispositionService,
-    InvalidationService,
     ModelChangeRejected,
     ObjectService,
     PROTOCOL_VERSION,
     ProjectionService,
+    RepairService,
     RunService,
     WorkCompiler,
 )
@@ -66,7 +65,9 @@ def _render(
             "meaning_form": MeaningConfirmationForm(),
             "method_form": MethodAuthorizationForm(),
             "run_form": RunWorkForm(),
-            "repair_form": FiledReportRepairForm(),
+            "repair_form": FiledReportRepairForm(
+                initial={"idempotency_key": state["next_action_key"]}
+            ),
             "review_form": CandidateDispositionForm(),
             "message": message,
         },
@@ -143,7 +144,8 @@ def run_work(request: HttpRequest, job_id, episode_id) -> HttpResponse:
         return _render(request, state, message="Work was not started.", status=409)
     try:
         order = state["work_order"]
-        if order is None:
+        retrying = state["next_action"] == "RETRY_WORK"
+        if order is None or retrying:
             assertions = list(
                 SourceAssertion.objects.select_related(
                     "document_version__artifact"
@@ -172,7 +174,8 @@ def run_work(request: HttpRequest, job_id, episode_id) -> HttpResponse:
 @require_POST
 def use_filed_report(request: HttpRequest, job_id, episode_id) -> HttpResponse:
     state = _state(request, job_id, episode_id)
-    if not FiledReportRepairForm(request.POST).is_valid():
+    form = FiledReportRepairForm(request.POST)
+    if not form.is_valid():
         return _render(request, state, message="The correction was not recorded.", status=409)
     decision = state["decision"]
     if (
@@ -188,14 +191,26 @@ def use_filed_report(request: HttpRequest, job_id, episode_id) -> HttpResponse:
     if annual is None:
         return _render(request, state, message="The captured filed annual report is unavailable.", status=409)
     try:
-        _, _, passed = InvalidationService.repair_wrong_source(
-            request.user, decision, annual
+        result = RepairService.create_candidate_using_filed_report(
+            request.user,
+            decision,
+            annual,
+            case_a_profile(),
+            form.cleaned_data["idempotency_key"],
         )
-        if passed.outcome != AdmissibilityDecision.Outcome.PASS:
-            raise ModelChangeRejected("REPAIR_BLOCKED", "The replacement did not pass the bounded checks.")
-        CandidateService.create(passed, state["episode"].starting_artifact, case_a_profile())
     except ModelChangeRejected as exc:
-        return _render(request, state, message=str(exc), status=409)
+        return _render(
+            request,
+            ProjectionService.resume(request.user, job_id, episode_id),
+            message=str(exc),
+            status=409,
+        )
+    if result.outcome is not None:
+        return _render(
+            request,
+            ProjectionService.resume(request.user, job_id, episode_id),
+            status=409,
+        )
     return _redirect(state)
 
 

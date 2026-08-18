@@ -15,6 +15,7 @@
   <h2>Original model</h2>
   <dl class="meta">
     <dt>Workbook</dt><dd>{{ original.filename }}</dd>
+    <dt>SHA-256</dt><dd>{{ original.digest }}</dd>
     <dt>Named use</dt><dd>{{ episode.named_use }}</dd>
     <dt>Evidence cutoff</dt><dd>{{ episode.cutoff }}</dd>
   </dl>
@@ -49,22 +50,43 @@
 {% if source_exception %}
 <section class="card">
   <h2>The proposed source does not fit this annual target</h2>
-  <p>The worker proposed the equal reported value from the captured 8-K. The annual-target rule requires the captured filed annual report.</p>
-  <p class="good">The original workbook is unchanged and no candidate exists.</p>
+  <p>The first proposal used the captured 8-K. It reports the same value, but this annual target requires the filed annual report once it is available.</p>
+  {% if technical_outcome %}<p class="warn">{{ technical_outcome.public_message }}</p>{% endif %}
+  <p class="good">The original workbook remains unchanged and no candidate exists.</p>
   <form method="post" action="{% url 'model_change_use_filed_report' job_id=job.id episode_id=episode.id %}">
-    {% csrf_token %}{{ repair_form }}<button type="submit">Create a candidate using the filed annual report</button>
+    {% csrf_token %}{{ repair_form }}<button type="submit">{% if next_action == 'RETRY_CANDIDATE' %}Retry creating the candidate{% else %}Create a candidate using the filed annual report{% endif %}</button>
   </form>
+</section>
+{% endif %}
+
+{% if technical_outcome and not source_exception %}
+<section class="card">
+  <h2>This work needs another attempt</h2>
+  <p class="warn">{{ technical_outcome.public_message }}</p>
+  {% if next_action == 'RETRY_WORK' %}
+  <form method="post" action="{% url 'model_change_run' job_id=job.id episode_id=episode.id %}">
+    {% csrf_token %}{{ run_form }}<button type="submit">Retry this work</button>
+  </form>
+  {% endif %}
 </section>
 {% endif %}
 
 {% if candidate and calculation %}
 <section class="card">
   <h2>Review the calculated candidate</h2>
+  <p>The first proposal cited the 8-K for the same numeric value. It was blocked because this annual target requires the filed annual report.</p>
+  <p class="good">The original workbook remains unchanged.</p>
   <p class="change">FY2025 revenue: {{ calculation.operation_receipt.operation.before }} → {{ calculation.operation_receipt.operation.after }} USDm</p>
   <dl class="meta">
-    <dt>Calculation</dt><dd>{{ calculation.engine_version }}</dd>
-    <dt>Warnings</dt><dd>{% if calculation.warnings %}Present{% else %}None{% endif %}</dd>
-    <dt>Formula errors</dt><dd>{% if calculation.formula_errors %}Present{% else %}None{% endif %}</dd>
+    <dt>Filed annual report</dt><dd>{{ candidate_source.document_version.identity.issuer }}, filed {{ candidate_source.document_version.identity.filing_date }} ({{ candidate_source.document_version.artifact.filename }})</dd>
+    <dt>Assertion</dt><dd>{{ candidate_source.locator }} — {{ candidate_source.value }} {{ candidate_source.unit }}</dd>
+    <dt>Original workbook</dt><dd>{{ original.filename }} — SHA-256 {{ original.digest }}</dd>
+    <dt>Candidate workbook</dt><dd>{{ candidate.filename }} — SHA-256 {{ candidate.digest }}</dd>
+    <dt>Named synthetic use</dt><dd>{{ episode.named_use }}</dd>
+    <dt>Adapter profile</dt><dd>{{ calculation.adapter_profile }}</dd>
+    <dt>Calculation engine</dt><dd>{{ calculation.engine_identity }} — {{ calculation.engine_version }}</dd>
+    <dt>Warnings</dt><dd>{% if calculation.warnings %}{{ calculation.warnings|join:", " }}{% else %}None{% endif %}</dd>
+    <dt>Formula errors</dt><dd>{% if calculation.formula_errors %}{{ calculation.formula_errors|join:", " }}{% else %}None{% endif %}</dd>
   </dl>
   <h2>Declared consequences</h2>
   {% for item in consequences %}

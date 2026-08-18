@@ -21,6 +21,7 @@ from product.campaign.model_change.services import (
     PROTOCOL_VERSION,
     ProjectionService,
     ProposalParser,
+    RepairService,
     WorkCompiler,
 )
 from product.campaign.models import (
@@ -143,9 +144,18 @@ class ModelChangeServiceTests(CaseAFixtureMixin, TestCase):
             if item.document_version.document_class
             == SourceDocumentVersion.DocumentClass.FILED_ANNUAL_REPORT_10K
         )
-        amendment, replacement, passed = InvalidationService.repair_wrong_source(
-            self.owner, blocked, annual
+        repair = RepairService.create_candidate_using_filed_report(
+            self.owner,
+            blocked,
+            annual,
+            case_a_profile(),
+            "joined-service-test",
         )
+        amendment = repair.amendment
+        replacement = repair.replacement_proposal
+        passed = repair.pass_decision
+        candidate = repair.candidate
+        calculation = repair.calculation_receipt
         self.assertEqual(AdmissibilityDecision.Outcome.PASS, passed.outcome)
         self.assertNotEqual(proposal.closure_digest, replacement.closure_digest)
         self.assertTrue(
@@ -155,9 +165,7 @@ class ModelChangeServiceTests(CaseAFixtureMixin, TestCase):
                 descendant_id=blocked.pk,
             ).exists()
         )
-        candidate, operation, calculation = CandidateService.create(
-            passed, self.episode.starting_artifact, case_a_profile()
-        )
+        operation = calculation.operation_receipt
         self.assertEqual(self.episode.starting_artifact_id, candidate.parent_id)
         self.assertEqual(passed.pk, candidate.candidate_from_pass_id)
         self.assertEqual(original, bytes(self.episode.starting_artifact.content))
@@ -206,11 +214,11 @@ class ModelChangeServiceTests(CaseAFixtureMixin, TestCase):
     def test_stale_closure_blocks_and_material_amendment_invalidates_descendants(self) -> None:
         order = self.compile_order()
         proposal = ProposalParser.parse(self.worker_value(order), order.packet)
-        stale = AdmissibilityGate.evaluate(proposal, "0" * 64)
-        self.assertEqual("BLOCK_STALE_CLOSURE", stale.reason_code)
         amendment, replacement, events = InvalidationService.amend(
             self.owner, self.object, {"description": "Amended synthetic meaning"}
         )
+        stale = AdmissibilityGate.evaluate(proposal, "0" * 64)
+        self.assertEqual("BLOCK_STALE_CLOSURE", stale.reason_code)
         self.assertEqual(self.object.pk, replacement.parent_id)
         self.assertTrue(events)
         self.assertTrue(
@@ -279,6 +287,7 @@ class ModelChangeServiceTests(CaseAFixtureMixin, TestCase):
                 manifest_id, self.episode, self.episode.starting_artifact, observed
             ),
         )
+        manifest.refresh_from_db()
         object_id = uuid.uuid4()
         meaning = {
             "target": services.PRELIMINARY_TARGET,
@@ -314,47 +323,34 @@ class ModelChangeServiceTests(CaseAFixtureMixin, TestCase):
             if item.document_version.document_class
             == SourceDocumentVersion.DocumentClass.EARNINGS_RELEASE_8K
         )
-        proposal_id = uuid.uuid4()
-        closure = "1" * 64
-        operation = {
-            "kind": "set_numeric_value",
-            "target_ref": services.PRELIMINARY_TARGET,
-            "value": str(assertion.value),
-            "unit": assertion.unit,
-        }
-        payload = {
-            "id": str(proposal_id),
-            "episode": str(self.episode.pk),
-            "parent": None,
-            "work_order": None,
-            "proposer_kind": ModelChangeProposal.ProposerKind.HOST_DERIVED,
-            "conceptual_object": str(conceptual.pk),
-            "starting_artifact": str(self.episode.starting_artifact_id),
-            "source_assertion": str(assertion.pk),
-            "manifest": str(manifest.pk),
-            "input_revision": 1,
-            "operation": operation,
-            "protocol_version": PROTOCOL_VERSION,
-            "claim_ceiling": self.object.claim_ceiling,
-            "closure_digest": closure,
-        }
-        proposal = services._create(
-            ModelChangeProposal,
-            {
-                "id": proposal_id,
-                "episode": self.episode,
-                "proposer_kind": ModelChangeProposal.ProposerKind.HOST_DERIVED,
-                "conceptual_object": conceptual,
-                "starting_artifact": self.episode.starting_artifact,
-                "source_assertion": assertion,
-                "manifest": manifest,
-                "input_revision": 1,
-                "operation": operation,
-                "protocol_version": PROTOCOL_VERSION,
-                "claim_ceiling": self.object.claim_ceiling,
-                "closure_digest": closure,
-            },
-            payload,
+        meaning_authority = ObjectService.disposition(
+            self.owner,
+            conceptual,
+            ObjectDisposition.Action.CONFIRM_MEANING,
+            {"confirmed": True},
         )
-        decision = AdmissibilityGate.evaluate(proposal, closure)
+        method_authority = ObjectService.disposition(
+            self.owner,
+            conceptual,
+            ObjectDisposition.Action.AUTHORIZE_METHOD,
+            {"method": "reported_value", "source_rule": "captured-source-per-target"},
+        )
+        order = WorkCompiler.compile(
+            self.episode,
+            conceptual,
+            [meaning_authority, method_authority],
+            manifest,
+            self.assertions,
+            PROTOCOL_VERSION,
+        )
+        proposal = ProposalParser.parse(
+            self.worker_value(
+                order,
+                SourceDocumentVersion.DocumentClass.EARNINGS_RELEASE_8K,
+            ),
+            order.packet,
+        )
+        decision = AdmissibilityGate.evaluate(
+            proposal, str(order.packet["closure_digest"])
+        )
         self.assertEqual(AdmissibilityDecision.Outcome.PASS, decision.outcome)

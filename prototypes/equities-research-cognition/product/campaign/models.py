@@ -192,6 +192,15 @@ class ArtifactVersion(AppendOnlyModel):
                     "candidate artifact crosses its exact passing closure"
                 )
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=("candidate_from_pass",),
+                condition=models.Q(candidate_from_pass__isnull=False),
+                name="model_change_one_candidate_per_pass",
+            )
+        ]
+
 
 class RunSpecVersion(AppendOnlyModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -1229,6 +1238,11 @@ class Amendment(AppendOnlyModel):
         on_delete=models.PROTECT,
         related_name="replacement_amendments",
     )
+    repair_key = models.CharField(
+        max_length=64, null=True, blank=True, unique=True, editable=False
+    )
+    adapter_profile = models.CharField(max_length=120, blank=True)
+    idempotency_key = models.CharField(max_length=120, blank=True)
     digest = models.CharField(max_length=64, unique=True, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -1253,22 +1267,41 @@ class Amendment(AppendOnlyModel):
             or not isinstance(self.bounded_change, dict)
         ):
             raise ValidationError("amendment crosses exact episode custody")
-        expected = canonical_digest(
-            {
-                "id": str(self.pk),
-                "episode": str(self.episode_id),
-                "actor": self.actor_id,
-                "object_version": str(self.object_version_id) if self.object_version_id else None,
-                "blocked_decision": str(self.blocked_decision_id) if self.blocked_decision_id else None,
-                "action": self.action,
-                "bounded_change": self.bounded_change,
-                "rationale": self.rationale,
-                "replacement_object": str(self.replacement_object_id) if self.replacement_object_id else None,
-                "replacement_proposal": str(self.replacement_proposal_id) if self.replacement_proposal_id else None,
-            }
-        )
+        identity = {
+            "id": str(self.pk),
+            "episode": str(self.episode_id),
+            "actor": self.actor_id,
+            "object_version": str(self.object_version_id) if self.object_version_id else None,
+            "blocked_decision": str(self.blocked_decision_id) if self.blocked_decision_id else None,
+            "action": self.action,
+            "bounded_change": self.bounded_change,
+            "rationale": self.rationale,
+            "replacement_object": str(self.replacement_object_id) if self.replacement_object_id else None,
+            "replacement_proposal": str(self.replacement_proposal_id) if self.replacement_proposal_id else None,
+        }
+        if self.repair_key:
+            identity.update(
+                {
+                    "repair_key": self.repair_key,
+                    "adapter_profile": self.adapter_profile,
+                    "idempotency_key": self.idempotency_key,
+                }
+            )
+        expected = canonical_digest(identity)
         if self.digest != expected:
             raise ValidationError("amendment digest is not exact")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=("blocked_decision",),
+                condition=models.Q(
+                    blocked_decision__isnull=False,
+                    action="USE_FILED_ANNUAL_REPORT",
+                ),
+                name="model_change_one_filed_repair_per_block",
+            )
+        ]
 
 
 class InvalidationEvent(AppendOnlyModel):
@@ -1440,3 +1473,97 @@ class CorrectionRecord(AppendOnlyModel):
         )
         if self.digest != expected:
             raise ValidationError("correction record digest is not exact")
+
+
+class ModelChangeOutcome(AppendOnlyModel):
+    class Stage(models.TextChoices):
+        RUNTIME_FAILURE = "RUNTIME_FAILURE", "Runtime failure"
+        WORKER_REFUSAL = "WORKER_REFUSAL", "Worker refusal"
+        CALCULATION_FAILURE = "CALCULATION_FAILURE", "Calculation failure"
+
+    class NextAction(models.TextChoices):
+        RETRY_WORK = "RETRY_WORK", "Retry this work"
+        RETRY_CANDIDATE = "RETRY_CANDIDATE", "Retry creating the candidate"
+        NONE = "NONE", "No next action"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    episode = models.ForeignKey(
+        ModelChangeEpisode,
+        on_delete=models.PROTECT,
+        related_name="model_change_outcomes",
+    )
+    work_order = models.ForeignKey(
+        WorkOrder,
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="model_change_outcomes",
+    )
+    blocked_decision = models.ForeignKey(
+        AdmissibilityDecision,
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="model_change_outcomes",
+    )
+    stage = models.CharField(max_length=32, choices=Stage)
+    reason_code = models.CharField(max_length=80)
+    public_message = models.TextField()
+    next_action = models.CharField(max_length=24, choices=NextAction)
+    closure_digest = models.CharField(max_length=64)
+    attempt_key = models.CharField(max_length=64)
+    protocol_version = models.CharField(max_length=80)
+    technical_details = models.JSONField(default=dict, editable=False)
+    digest = models.CharField(max_length=64, unique=True, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def clean(self) -> None:
+        runtime_path = self.stage in {
+            self.Stage.RUNTIME_FAILURE,
+            self.Stage.WORKER_REFUSAL,
+        }
+        calculation_path = self.stage == self.Stage.CALCULATION_FAILURE
+        if (
+            runtime_path != bool(self.work_order_id)
+            or calculation_path != bool(self.blocked_decision_id)
+            or self.work_order_id
+            and (
+                self.work_order.campaign_id != self.episode.campaign_id
+                or self.work_order.protocol != "model_change_v0"
+            )
+            or self.blocked_decision_id
+            and self.blocked_decision.proposal.episode_id != self.episode_id
+            or not self.public_message.strip()
+            or not isinstance(self.technical_details, dict)
+        ):
+            raise ValidationError("model-change outcome crosses exact custody")
+        expected = canonical_digest(
+            {
+                "id": str(self.pk),
+                "episode": str(self.episode_id),
+                "work_order": str(self.work_order_id) if self.work_order_id else None,
+                "blocked_decision": (
+                    str(self.blocked_decision_id)
+                    if self.blocked_decision_id
+                    else None
+                ),
+                "stage": self.stage,
+                "reason_code": self.reason_code,
+                "public_message": self.public_message,
+                "next_action": self.next_action,
+                "closure_digest": self.closure_digest,
+                "attempt_key": self.attempt_key,
+                "protocol_version": self.protocol_version,
+                "technical_details": self.technical_details,
+            }
+        )
+        if self.digest != expected:
+            raise ValidationError("model-change outcome digest is not exact")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=("stage", "attempt_key"),
+                name="model_change_outcome_attempt_once",
+            )
+        ]

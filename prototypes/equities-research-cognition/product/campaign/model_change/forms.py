@@ -20,7 +20,10 @@ class RunWorkForm(forms.Form):
 
 
 class FiledReportRepairForm(forms.Form):
-    pass
+    idempotency_key = forms.CharField(
+        max_length=120,
+        widget=forms.HiddenInput,
+    )
 
 
 class CandidateDispositionForm(forms.Form):
