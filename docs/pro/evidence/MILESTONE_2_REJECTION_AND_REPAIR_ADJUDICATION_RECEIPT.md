@@ -14,8 +14,8 @@ Recorded: 18 August 2026.
 - Rejected receipt: `prototypes/equities-research-cognition/docs/pro/evidence/CASE_A_IMPLEMENTATION_RECEIPT.md`
 - Coordinator projection: `dec-2026-08-18-037`
 - Governing repair contract: `docs/pro/CASE_A_BOUNDED_REPAIR_CONTRACT_V1.md`
-- Product repair branch/head: `agent/case-a-authority-recovery-repair-v1` at `3c496b3bb0e87b8c6eb6a4f5a1a4460f7864b82e`
-- Classifier repair branch/head: `agent/classifier-final-surface-repair-v1` at `cde37777ebdb6944b463a54d2529873c7dc03c56`
+- Product repair branch/head: `agent/case-a-authority-recovery-repair-v1` at `07db2a6b1f0e4b9f8aaca4f2bc5e5cb3192e1e43`
+- Classifier repair branch/head: `agent/classifier-final-surface-repair-v1` at `2c486b6d7a682be42cdf9c5758b4eb8e1d01055f`
 - Product repair issue: `#8`
 - Classifier repair issue: `#9`
 
