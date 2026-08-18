@@ -1,377 +1,373 @@
 # Case A Bounded Repair Contract V1
 
-Packet 005 is rejected as an integration candidate because its database authority boundary can be bypassed and its recovery and review paths are incomplete, despite a real joined synthetic episode having executed successfully.
+Packet 005 is rejected as a product candidate until the database authority boundary, retry semantics, recoverable outcomes, candidate-review evidence, and final classifier surface pass the exact hostile tests in this contract.
 
-Status: governing repair contract for one bounded repair cycle under the user-authorised end-to-end delivery commission.
+Status: governing bounded-repair contract.
 
 Programme state: `REPAIRING`.
 
-## 1. Exact evidence basis
+Recorded: 18 August 2026.
 
-- PRO branch before this repair adjudication: `agent/pro-grounding` at `dee299679562db02f051997f244868e86d6e0a0e`.
-- Rejected implementation branch: `agent/case-a-outcome-complete-v0`.
-- Rejected implementation commit: `cf5685383654c00513825fc451b60221bc0117e9`.
-- Evidence head: `3d5c3157f91361bee120c10ecd4bddfda6e16296`.
-- Worker receipt: `prototypes/equities-research-cognition/docs/pro/evidence/CASE_A_IMPLEMENTATION_RECEIPT.md` at the evidence head.
-- Independent coordinator verdict: `REJECT_PENDING_BOUNDED_REPAIR`.
+## 1. Exact basis and adjudication
 
-The implementation branch is evidence. It is not merged, promoted, deployed, or described as a verified V0.
+- Repository: `TJ4519/equities-research-cognition`
+- Governing PRO branch before repair adjudication: `agent/pro-grounding` at `dee299679562db02f051997f244868e86d6e0a0e`
+- Rejected implementation branch: `agent/case-a-outcome-complete-v0`
+- Rejected implementation commit: `cf5685383654c00513825fc451b60221bc0117e9`
+- Rejected evidence head: `3d5c3157f91361bee120c10ecd4bddfda6e16296`
+- Worker receipt: `prototypes/equities-research-cognition/docs/pro/evidence/CASE_A_IMPLEMENTATION_RECEIPT.md`
+- Coordinator projection: `dec-2026-08-18-037`
+- Adjudication: `REJECT_PENDING_BOUNDED_REPAIR`
 
-## 2. Findings adopted
+The rejected branch remains historical implementation evidence. It is not merged, deployed, promoted, called verified V0, or used as the basis for an analyst, Excel, professional-reliance, harness-improvement, or production claim.
+
+## 2. Evidence retained narrowly
+
+The following observations survive rejection because they were separately reproduced or coherently evidenced:
+
+- one real NTM/Codex worker ran with captured sources and search closed;
+- the application gate blocked the equal-valued annual 8-K proposal;
+- an attributed 10-K replacement proposal was produced;
+- the bounded LibreOfficeDev proxy produced a recalculated child workbook and two declared consequences;
+- the synthetic disposition, restart projection, and correction seed were exercised;
+- the focused model-change replay passed 25 tests;
+- the existing owned-job and workbook replay passed 19 tests; and
+- Django check, migration-drift check, boundary check, and diff check passed in the reported environment.
+
+These results justify one bounded repair cycle. They do not license integration because the database can be induced to admit a candidate that the canonical application gate blocks.
+
+## 3. Findings adopted
 
 ### P0 — candidate authority is forgeable at the database boundary
 
-`campaign_model_change_candidate_guard()` trusts an inserted `AdmissibilityDecision` row when its stored outcome says `PASS` and its foreign-key closure appears internally consistent. It does not independently recompute the target-specific admissibility result, require the canonical validator version and reason, or require a calculation receipt to exist at transaction completion.
+`campaign_model_change_candidate_guard()` trusts the stored fields of an `AdmissibilityDecision`, principally `outcome = PASS` and a matching closure. It does not recompute the target-specific source/target result, require the canonical validator version and reason, or require a matching calculation receipt before the transaction commits.
 
-A direct-SQL writer can therefore create a semantically false `PASS` population over an annual 8-K proposal and insert a candidate even though the application gate correctly returns `BLOCK_WRONG_DOCUMENT_CLASS` for the same source-target relation.
-
-This defeats the claimed host-owned admission boundary. ORM cleanliness and append-only rows do not repair it.
+A direct-SQL writer can therefore create a structurally joined but attacker-authored `PASS` for an annual 8-K proposal and insert a candidate even though the application gate correctly returns `BLOCK_WRONG_DOCUMENT_CLASS`.
 
 ### P1 — filed-report repair is repeatable
 
-`repair_wrong_source()` validates the reason code and replacement assertion but does not require the blocked decision to remain current, does not enforce a unique successful repair command, and does not return an existing result idempotently. The same invalidated block can produce multiple amendments, replacement proposals, `PASS` decisions, and candidate attempts.
+`repair_wrong_source()` checks the block reason and annual assertion class but does not prove that the block is current, uninvalidated, unused, and uniquely repairable. The same historical block can produce multiple amendments, replacement proposals, decisions, and candidate attempts.
 
-### P1 — calculation failure strands a passed proposal
+### P1 — calculation failure can strand authority
 
-The view commits the amendment, replacement proposal, invalidations, and `PASS` before `CandidateService.create()` completes. `AdapterRejected` is not translated into a bounded product outcome. A failed calculation can therefore leave the episode with a current `PASS`, no candidate, no receipt, no repair action, and no legal retry path. The HTTP request may return 500; repeating the repair sees no current block and returns 409.
+The repair transaction commits an amendment, replacement proposal, invalidations, and a `PASS` before candidate creation. `CandidateService.create()` then invokes the adapter in a different transaction. An `AdapterRejected` can escape the view as HTTP 500 and leave a current `PASS`, no candidate, no receipt, no current block, and no legal retry action.
 
-### P1 — bounded refusal is lost
+### P1 — bounded worker refusal is lost
 
-`ProposalParser` can return `model-change-refusal/v0`, and `RunService.run()` returns it, but the view discards the result. No canonical refusal record, visible explanation, or next action survives restart. A work order can remain in history with no proposal, decision, candidate, refusal, or recoverable product state.
+`ProposalParser` and `RunService` can return `model-change-refusal/v0`, but the view discards that result. No exact refusal, public consequence, or next action survives restart.
 
-### P1 — classifier evidence is stale at the evidence head
+### P1 — the final classifier surface differs from the worker receipt
 
-The implementation receipt reports the pre-receipt classifier failure. At evidence head `3d5c3157f91361bee120c10ecd4bddfda6e16296`, the executable package contains `docs/pro/evidence/CASE_A_IMPLEMENTATION_RECEIPT.md`, a path not classified by the current `category()` function. The classifier therefore fails on the newly added evidence surface before reaching the binary workbook. Fresh verification discovered 143 tests, executed 138, and stopped on one architecture setup error.
+At evidence head `3d5c3157...`, `tools/classify_loc.py` first encounters the new package path `docs/pro/evidence/CASE_A_IMPLEMENTATION_RECEIPT.md`, for which no category exists. It fails before reaching the workbook. The accurate fresh suite result is 143 discovered, 138 executed, and one architecture setup error. A binary-only workbook repair does not close this surface.
 
-A binary-only repair compiled from the earlier tree does not close the final classifier surface.
+### P1 — candidate review omits contractually required evidence
 
-### P1 — candidate review omits required evidence
-
-The candidate page shows the target delta, engine, warnings, formula errors, and two consequences, but omits:
-
-- the exact captured 10-K document identity and assertion locator;
-- the original and candidate artifact identities;
-- the named synthetic use awaiting disposition;
-- the explicit fact that the original remains byte-for-byte unchanged; and
-- the explanation that the first 8-K proposal was blocked despite numerical equality because this annual target requires the filed annual report.
-
-The page therefore does not yet let a cold reviewer reconstruct why this candidate exists and what the final action means.
-
-## 3. Evidence retained narrowly
-
-The rejected branch still supplies useful mechanism and product-path evidence:
-
-- one real NTM/Codex worker ran with captured sources and search closed;
-- the typed equal-value 8-K proposal was blocked by the application gate;
-- an attributed 10-K replacement was created;
-- the bounded proxy adapter produced a recalculated child workbook with two declared consequences;
-- a synthetic disposition, restart projection, and correction seed were exercised;
-- the focused Case A suite passed 25 tests;
-- the owned-job/workbook suite passed 19 tests; and
-- Django, migration-drift, package-boundary, and diff checks passed in the reported environment.
-
-These facts justify bounded repair rather than discarding the whole vertical. They do not license integration because the P0 boundary invalidates the strongest safety claim.
+The candidate view does not show the exact 10-K document/assertion and locator, original and candidate artifact identities, named synthetic use, explicit unchanged-original fact, or the reason the equal-valued 8-K was rejected for this annual target.
 
 ## 4. Repair completion object
 
-The repair succeeds only when the same joined Case A episode completes with the following additional properties:
+The repair is complete only when one fresh synthetic Case A episode can traverse the joined path and every named failure remains recoverable:
 
 ```text
-canonical source/object proposal
--> one database-recomputed admissibility result
--> no forgeable PASS population
--> no candidate without a matching calculation receipt at commit
--> one current, single-use, idempotent filed-report repair
--> recoverable runtime, refusal, and calculation-failure outcomes
--> ordinary next action after every bounded failure
--> complete candidate-review evidence
--> restart and rollback from append-only state
--> fresh real NTM/Codex replay
--> fresh independent hostile verification
+authenticate
+-> resume the synthetic Micron job and immutable campaign-backed episode
+-> confirm the bounded FY2025 revenue meaning
+-> separately authorise the reported-value method and target-specific source rule
+-> run one real NTM/Codex worker over exact captured sources with search closed
+-> persist proposal, refusal, or runtime failure as canonical state
+-> recompute canonical target/source admission inside PostgreSQL
+-> block the equal-value annual 8-K before candidate creation
+-> choose “Create a candidate using the filed annual report”
+-> either append one successful repair and complete candidate/receipt atomically
+   or retain the block and persist a recoverable calculation failure
+-> review exact source, artifact, calculation, consequence, and named-use evidence
+-> record SIMULATE_NAMED_USE, REJECT, or REWORK
+-> restart from append-only canonical state with one ordinary next action
+-> emit one exact CorrectionRecord seed without harness promotion
 ```
 
-A locally green suite, a repeated happy-path seed, or a repaired template alone does not close this contract.
+A green happy path is insufficient. The P0 direct-SQL attack, repeat repair, adapter failure, runtime failure, refusal, restart, UI-evidence, and classifier counterexamples must all pass.
 
-## 5. Canonical admissibility law
+## 5. Canonical admissibility must be recomputed by PostgreSQL
 
-### 5.1 One database-owned computation
+### 5.1 One canonical database function
 
-Add one PostgreSQL function with a versioned contract, conceptually:
+Migration `0007_model_change_v0_repair_1.py` must install a deterministic PostgreSQL function equivalent to:
 
 ```text
 campaign_model_change_expected_admission_v1(proposal_id)
-  -> expected_outcome, expected_reason_code, expected_closure_digest
+  -> validator_version, outcome, reason_code, closure_digest
 ```
 
-The function must derive its result from canonical rows only:
+The function reads only canonical database facts and computes the target-specific result from:
 
-- proposal and immutable digest-bound operation;
-- episode, input revision, owner, campaign, and starting artifact;
+- proposal, episode, input revision, and current closure;
 - conceptual object and manifest;
-- source assertion, source document identity, document class, value, unit, and dimensions;
-- target reference and target-specific policy;
-- operation equality to manifest and assertion;
-- current closure and invalidation population; and
-- the paired preliminary-earnings-flash counterexample.
+- exact target reference, allowed operation, value, and unit;
+- exact source assertion and source document class;
+- current invalidation state; and
+- the bounded annual versus preliminary target rules.
 
-The function must return `BLOCK_WRONG_DOCUMENT_CLASS` for the annual target plus captured 8-K and `PASS_EXACT_CLOSURE` for:
+The expected validator version is exactly `model-change-admissibility/v1`.
 
-- the annual target plus captured 10-K; and
-- the preliminary earnings-flash target plus captured 8-K.
+The function must produce at least the existing legal results:
 
-It must not infer document identity from numerical equality.
+- annual target + captured 8-K -> `BLOCK / BLOCK_WRONG_DOCUMENT_CLASS`;
+- annual target + captured 10-K -> `PASS / PASS_EXACT_CLOSURE`;
+- preliminary earnings-flash target + captured 8-K -> `PASS / PASS_EXACT_CLOSURE`;
+- malformed operation, stale closure, invalidated ancestor, or unsupported target/source pair -> the corresponding non-pass result.
 
-### 5.2 Decision insertion guard
+Do not implement a universal filing hierarchy.
 
-A database trigger on `campaign_admissibilitydecision` must call the canonical function and reject any inserted row whose:
+### 5.2 Decision insert guard
 
-- validator version is not the exact canonical version;
-- outcome differs from the recomputed outcome;
-- reason code differs from the recomputed reason;
-- closure digest differs from the recomputed current closure; or
-- proposal is stale, invalidated, cross-episode, or outside the bounded policy.
+A database trigger on `campaign_admissibilitydecision` must call the canonical function and reject an inserted row when any of these differ from the recomputed result:
 
-`AdmissibilityGate.evaluate()` must obtain the result from the same database computation rather than maintain a second independently mutable truth table in Python.
+- proposal identity;
+- validator version;
+- outcome;
+- reason code; or
+- closure digest.
 
-### 5.3 Candidate insertion and completeness guards
+`AdmissibilityGate.evaluate()` must obtain the same canonical result from the database rather than maintain an independently drifting Python policy implementation.
 
-Candidate insertion must re-run the canonical function and require:
+### 5.3 Candidate insert guard
 
-- recomputed `PASS`;
-- the exact canonical decision row and validator version;
-- exact current proposal, parent, manifest, assertion, episode, campaign, owner, and closure;
-- no invalidated ancestor; and
-- one candidate maximum for the pass decision.
+The candidate trigger must call the canonical function again at insert time and require:
 
-A deferrable transaction-end guard must reject a committed candidate unless exactly one matching `CalculationReceipt` exists and binds:
+- computed outcome `PASS`;
+- stored decision exactly equal to the computed validator, outcome, reason, and closure;
+- one current proposal and decision;
+- same owner, job, episode, campaign, manifest, object, assertion, parent artifact, and input revision;
+- no invalidated ancestor;
+- one candidate maximum for the pass decision; and
+- candidate digest and parentage consistent with the proposed operation.
 
-- the same candidate and pass decision;
-- the same episode, manifest, and closure;
-- input digest equal to the exact parent digest;
-- output digest equal to the candidate digest;
-- no formula errors; and
-- the bounded adapter/profile and engine identity.
+A stored `PASS` is never sufficient by itself.
 
-A direct SQL transaction that inserts only a candidate must fail at commit. A candidate and mismatched receipt must fail. A forged decision with `validator=attacker/v0`, a wrong reason, or annual-8-K `PASS` must fail before candidate custody.
+### 5.4 Candidate and calculation completeness
 
-## 6. Single-use and idempotent repair law
+A candidate is not a reviewable artifact without its exact calculation receipt.
 
-Introduce one orchestration interface, semantically:
+Install a deferred transaction constraint or an equally strong database mechanism requiring, at commit:
+
+- every model-change candidate has exactly one `CalculationReceipt`;
+- the receipt references that candidate and the same pass decision, episode, manifest, and closure;
+- receipt input digest equals the exact parent digest;
+- receipt output digest equals the candidate digest;
+- the candidate and receipt are in the same episode/campaign;
+- formula errors are empty for a disposition-eligible candidate; and
+- no candidate or receipt is admitted from an invalidated ancestor.
+
+A direct-SQL insert of a candidate without a matching receipt must fail at transaction completion.
+
+## 6. Repair is current, single-use, concurrency-safe, and idempotent
+
+Introduce one orchestration boundary equivalent to:
 
 ```text
 RepairService.create_candidate_using_filed_report(
     actor,
-    current_block,
-    filed_annual_assertion,
+    blocked_decision,
+    annual_assertion,
     adapter_profile,
-    command_key,
-) -> existing_or_new_repair_result
+    idempotency_key,
+) -> RepairResult
 ```
 
-It is the only product path from the wrong-source exception to a candidate.
-
-The command must:
+The service must:
 
 1. lock the episode and blocked decision;
-2. require the block to be current, canonical, non-invalidated, and exactly `BLOCK_WRONG_DOCUMENT_CLASS`;
-3. require the captured annual assertion to be current, same-episode, and a filed annual report;
-4. derive a stable idempotency key from block, assertion, actor, action, closure, and adapter profile;
-5. return the existing successful amendment/proposal/decision/candidate/receipt when the exact command already succeeded;
-6. allow at most one successful filed-report amendment per blocked decision;
-7. allow at most one replacement proposal per successful repair command;
-8. allow at most one candidate and receipt per pass decision; and
-9. refuse divergent duplicate commands rather than producing parallel descendants.
+2. prove the decision is the current, uninvalidated `BLOCK_WRONG_DOCUMENT_CLASS` for the current closure;
+3. prove the annual assertion is the exact captured 10-K assertion in the same episode;
+4. derive one deterministic repair key from block, assertion, actor/action, closure, and adapter profile;
+5. enforce at most one successful amendment/replacement chain for that block/action;
+6. make concurrent identical calls converge on one result;
+7. return the existing exact candidate/receipt on an identical successful retry rather than creating new history; and
+8. refuse a conflicting retry whose assertion, profile, closure, or actor scope differs.
 
-Concurrent duplicate submissions must converge on one canonical result or one explicit conflict; they must not create two amendments or candidates.
+`CandidateService.create()` must be idempotent by exact pass decision and closure. An existing exact candidate/receipt is returned; an inconsistent partial or mismatched state is rejected.
 
-## 7. Recoverable attempt outcomes
+## 7. Repair and calculation cannot leave a stranded PASS
 
-Add one minimum append-only canonical record, named `ModelChangeAttemptOutcome` or an equally bounded equivalent, for outcomes that do not produce a proposal/candidate path.
+The successful filed-report repair must commit the amendment, replacement proposal, canonical pass, candidate artifact, and calculation receipt as one logical transaction.
 
-Required kinds:
+The smallest acceptable implementation may keep the bounded external calculation inside a locked database transaction. A cleaner staged implementation is allowed only when tests prove the same all-or-nothing authority result.
 
-- `RUNTIME_FAILURE`;
-- `WORKER_REFUSAL`; and
-- `CALCULATION_FAILURE`.
+When the adapter rejects, times out, returns formula errors, or fails before candidate completion:
 
-Minimum fields:
+- the amendment, replacement proposal, pass decision, candidate, and receipt must not become current;
+- the original wrong-source block remains current and available;
+- an append-only `CALCULATION_FAILURE` outcome is recorded in a separate successful transaction;
+- restart displays that no workbook changed; and
+- the ordinary next action is `Retry creating the candidate`.
+
+The bounded failure must not become HTTP 500.
+
+## 8. Runtime, refusal, and calculation outcomes are canonical and recoverable
+
+Add the minimum append-only model, named `ModelChangeOutcome` or an equally explicit equivalent, with fields sufficient to bind:
 
 - episode;
-- work order when applicable;
-- blocked decision when applicable;
-- attempt/idempotency key;
-- exact current closure;
-- bounded reason code;
-- safe ordinary-language message;
-- next-action enum;
-- retryable flag;
-- bounded details without raw secrets, tokens, stderr, or trace content;
+- optional work order;
+- optional blocked decision;
+- stage: `RUNTIME_FAILURE`, `WORKER_REFUSAL`, or `CALCULATION_FAILURE`;
+- exact reason code;
+- ordinary-language public message;
+- next action: `RETRY_WORK`, `RETRY_CANDIDATE`, or `NONE`;
+- current closure digest;
+- deterministic attempt/idempotency key;
+- bounded technical details that contain no secrets or raw credentials;
 - digest and creation time.
 
-Required next actions:
+Every outcome is append-only under ORM and direct SQL.
 
-- `RETRY_WORK` for recoverable runtime failure or worker refusal;
-- `RETRY_CANDIDATE` for recoverable calculation failure while the original block remains current; and
-- `NONE` for final bounded refusal.
+### Runtime failure
 
-### 7.1 Runtime and refusal
+A launch, readiness, timeout, custody, or collection failure must create an exact outcome when it is safe to retry. The page states that no model changed and offers `Retry this work`. Retrying creates a successor attempt/work order; it does not rewrite the failed attempt.
 
-`RunService.run()` must persist a canonical outcome when:
+### Worker refusal
 
-- runtime startup, dispatch, completion, or collection fails in a bounded recoverable way; or
-- the worker returns `model-change-refusal/v0`.
+A valid `model-change-refusal/v0` must be stored with the exact work order, closure, protocol, and bounded reason. Restart displays the refusal and a lawful next action. The refusal cannot silently become a proposal, decision, or candidate.
 
-The view must not discard these outcomes. Restart must display what happened, confirm that no model changed, and expose one ordinary next action. A retry creates a new immutable attempt/work order as required by current runtime semantics; it does not mutate the earlier attempt.
+### Calculation failure
 
-### 7.2 Calculation failure
+A bounded adapter failure is tied to the current block, repair command, closure, and adapter profile. It leaves the block current and offers `Retry creating the candidate`.
 
-The successful repair population must commit atomically with candidate and receipt. The bounded V0 implementation may hold the transaction through the allowlisted calculation call because the profile and timeout are fixed; a later architecture may split the operation only after preserving equivalent authority.
+### Projection law
 
-When the adapter rejects or times out:
+`ProjectionService.resume()` must project the current proposal/decision/candidate together with the latest applicable technical outcome and one legal next action. A later success may make an earlier failure historical, but the failure remains inspectable. NTM panes, Langfuse state, process memory, and flash messages are not restart truth.
 
-- the amendment, replacement proposal, `PASS`, candidate, and receipt from that attempt must not commit;
-- the original wrong-source block remains current;
-- a `CALCULATION_FAILURE` outcome is appended in a separate bounded transaction;
-- the page states that no candidate was created and the original is unchanged; and
-- `Retry creating the candidate` is available.
+## 9. Candidate review must restore professional evidence
 
-No `AdapterRejected` or equivalent bounded failure may escape as HTTP 500.
+The candidate view must state, in ordinary language:
 
-## 8. Projection and interaction repair
-
-`ProjectionService.resume()` and the visible route must represent:
-
-- current object and authorities;
-- current proposal/decision/candidate/receipt/disposition;
-- current runtime, refusal, or calculation-failure outcome;
-- the exact next legal professional action; and
-- immutable history including superseded failures and repairs.
-
-The candidate review must show, in ordinary language:
-
-- exact original filename and SHA-256;
-- exact candidate filename and SHA-256;
-- explicit `Original model unchanged` fact;
-- exact captured filed annual report identity, filing date, assertion locator, value, and unit;
+- the exact captured 10-K document identity, filing date, assertion locator, value, and unit;
+- the original workbook filename and SHA-256 identity;
+- the candidate workbook filename and SHA-256 identity;
 - the named synthetic use awaiting disposition;
-- the blocked 8-K explanation, including that the value was numerically equal but the annual target required the filed annual report;
+- that the original workbook remains unchanged;
+- that the first equal-valued 8-K proposal was blocked because this annual target requires the filed annual report;
 - target before and after;
-- both declared downstream consequences;
-- calculation engine identity/version;
-- warnings and formula-error status; and
+- exactly two declared recalculated consequences;
+- adapter profile, engine identity/version, warnings, and formula-error state; and
 - only `SIMULATE_NAMED_USE`, `REJECT`, or `REWORK` actions.
 
-Internal UUIDs, raw JSON, reason codes, NTM controls, trace IDs, workbench terms, generic approval, and professional-reliance language remain excluded from the primary surface.
+Internal UUIDs, raw packets, validator reason codes, NTM controls, and Casebook terminology remain support-only.
 
-## 9. Migration and rollback boundary
+Failure and refusal views must explain what happened, whether any workbook changed, and what the next action will cause.
 
-Repair the rejected branch additively with exactly:
+## 10. Migration and rollback boundary
+
+Use exactly:
 
 `prototypes/equities-research-cognition/product/campaign/migrations/0007_model_change_v0_repair_1.py`
 
-Do not rewrite `0005` or `0006`; they remain evidence of the rejected implementation and an explicit upgrade source.
+Do not rewrite migrations `0005` or `0006`. The rejected branch is evidence and the repair must be independently reviewable as an additive delta.
 
-Migration `0007` must:
+Migration 0007 may:
 
-- create the attempt-outcome table or equivalent minimal record;
-- install the canonical admissibility function;
-- replace or strengthen decision and candidate guards;
-- install unique/idempotency constraints;
-- install the deferred candidate/receipt completeness guard;
-- protect the new canonical record from direct SQL update/delete; and
-- validate or fail closed on pre-existing inconsistent V0 rows.
+- add the minimum outcome record and constraints;
+- add uniqueness needed for one repair/candidate per canonical ancestor;
+- install/replace canonical decision and candidate guards;
+- install the deferred candidate/receipt completeness guard; and
+- add direct-SQL append-only protection for every new record.
+
+It may not rename, delete, reinterpret, or destructively backfill existing rows.
 
 Required migration evidence:
 
-- fresh database `0001 -> 0007`;
-- upgrade `0004 -> 0007` with legacy campaigns preserved;
-- upgrade `0006 -> 0007` with a valid synthetic Case A history preserved;
-- attempted upgrade with a forged pass/orphan candidate refuses or quarantines explicitly before authority is granted;
-- empty reverse where safe;
-- populated reverse refuses destructive evidence loss; and
-- feature-flag rollback leaves all V0 history readable and prevents new V0 work.
+- clean fresh install through `0007`;
+- upgrade from `campaign.0004` through `0007` with a representative legacy row preserved;
+- upgrade from the rejected `0006` state through `0007`;
+- detection or refusal of any pre-existing forged/orphaned V0 row;
+- empty reverse where safe; and
+- populated reverse refusal or dormant forward-fix behaviour preserving history.
 
-No destructive backfill, table drop, legacy reinterpretation, or evidence deletion is authorised.
+Code rollback disables `MODEL_CHANGE_V0` and leaves canonical history readable. Populated repair schema is not dropped.
 
-## 10. Required hostile regressions
+## 11. Classifier reconciliation is a separate dependency
 
-### P0 database attacks
+Packet 009, not Packet 008, owns the final classifier repair.
 
-1. Insert annual 8-K proposal plus `validator=attacker/v0`, `PASS`, and candidate: decision or candidate must fail.
-2. Insert canonical validator name but forged `PASS`/reason for annual 8-K: must fail.
-3. Insert candidate without receipt in one transaction: commit must fail.
-4. Insert candidate with mismatched receipt, parent, pass, manifest, closure, input digest, or output digest: must fail.
-5. Insert duplicate candidate for one pass: must fail or return the exact existing canonical candidate through the service.
-6. Insert valid preliminary-flash 8-K decision and complete candidate/receipt population under its declared target: admission must remain possible where the profile permits it.
+It must cover both:
 
-### Repair and failure recovery
+- strict UTF-8 classification of package-level `docs/pro/evidence/CASE_A_IMPLEMENTATION_RECEIPT.md`; and
+- narrow validated binary measurement of the exact tracked workbook fixture.
 
-7. Submit the same filed-report repair twice sequentially: one amendment, one replacement, one pass, one candidate, one receipt.
-8. Submit the same repair concurrently: same result or explicit conflict, never duplicate descendants.
-9. Call repair on an invalidated/non-current block: refuse.
-10. Force `AdapterRejected`: no amendment/pass/candidate/receipt commits; calculation failure persists; restart exposes retry.
-11. Retry after calculation failure: one successful repair population and preserved prior failure history.
-12. Force worker refusal: refusal persists; restart exposes an ordinary next action; no proposal/decision/candidate exists.
-13. Force runtime startup/collection failure: bounded outcome persists; no HTTP 500; restart exposes retry.
+Final integration acceptance requires the complete repaired tree to pass the classifier and full adversarial suite. Packet 008 must not modify classifier files or hide classifier failure.
 
-### UI and restart
+Direct Excel remains suspended until the repaired product candidate survives fresh hostile verification.
 
-14. Candidate page contains exact 10-K identity/locator, original/candidate identities, named synthetic use, unchanged-original statement, equal-value source explanation, two consequences, engine, and error state.
-15. Page contains no professional reliance, generic approval, raw ID entry, packet JSON, NTM control, or Casebook vocabulary.
-16. Restart after block, runtime failure, refusal, calculation failure, successful candidate, disposition, and invalidation reconstructs the same current state and next action from PostgreSQL only.
+## 12. Mandatory hostile regressions
 
-## 11. Fresh joined evidence
+### Database authority
 
-After all deterministic tests pass, run one new synthetic Case A episode through one real NTM/Codex worker. Do not reuse the prior database rows or call the management seed command a live path.
+- insert a wrong-source proposal and canonical host block;
+- attempt direct-SQL `attacker/v0 PASS`; decision insert must fail;
+- attempt canonical-looking `PASS` with wrong reason; it must fail;
+- attempt candidate insertion for a blocked or invalidated proposal; it must fail;
+- attempt candidate insertion without a calculation receipt in the same transaction; commit must fail;
+- attempt a mismatched receipt, parent, manifest, closure, digest, episode, or pass; it must fail;
+- prove annual 10-K and preliminary 8-K legal pairs still pass.
 
-The receipt must include:
+### Repair idempotency and concurrency
 
-- exact branch/base/result and changed-file audit;
-- environment and executable versions;
-- exact work-order and output digests;
-- closed-search evidence;
-- canonical 8-K block and zero candidate;
-- one attributed repair and canonical 10-K pass;
-- candidate/receipt transaction evidence;
-- original/candidate digests and declared consequences;
-- synthetic disposition;
-- restart evidence;
-- correction seed;
-- forced runtime/refusal/calculation-failure recovery evidence;
-- migration/rollback evidence;
-- full test counts; and
-- explicit nonclaims.
+- submit the same filed-report repair twice; one amendment, replacement, decision, candidate, and receipt exist;
+- submit two concurrent identical repairs; both callers converge on the same result;
+- retry with a different assertion/profile/closure after success; it is rejected;
+- call repair on an invalidated or historical block; it is rejected.
 
-The worker return is not accepted until a fresh independent verifier reproduces every P0/P1 counterexample and reruns the joined episode from a clean or reconciled environment.
+### Calculation failure and retry
 
-## 12. Classifier dependency
+- force `AdapterRejected` before candidate completion;
+- HTTP response is bounded, not 500;
+- restart shows the original block, no candidate/receipt, exact failure, and `Retry creating the candidate`;
+- retry after restoring the adapter yields one successful chain;
+- formula errors remain non-dispositionable.
 
-Historical Packet 007 is superseded. A separate current-head classifier packet must operate on the exact evidence tree containing:
+### Runtime and refusal
 
-- `docs/pro/evidence/CASE_A_IMPLEMENTATION_RECEIPT.md` inside the executable package; and
-- `scenarios/adversarial/fixtures/workbook_capability_v0.xlsx`.
+- force runtime launch/readiness/collection failure; persist and restart with `Retry this work`;
+- return a valid worker refusal; persist exact refusal and next action;
+- retry creates a successor attempt without rewriting history;
+- stale worker output remains diagnostic and cannot acquire authority.
 
-It must classify the evidence markdown as strict UTF-8 `docs_data`, classify only the exact validated OOXML fixture as binary test data with zero physical lines, and keep every unknown or malformed binary fail-closed.
+### Candidate review
 
-Classifier repair remains disjoint from product code. Final integration requires the repaired classifier and the complete adversarial suite on the integrated repair candidate.
+Authenticated HTML assertions must prove every item in Section 9 appears and prohibited professional-use or internal-harness language does not.
 
-## 13. Direct Excel state
+### Restart and rollback
 
-Direct Excel work is suspended during this repair. Packet 006 is not advanced, and no Excel/native-workflow claim may be made. A new current-base direct-surface packet may be compiled after the repaired product candidate survives hostile verification.
+Restart must reconstruct each state without a live NTM session, Langfuse, process memory, or flash state. Feature-flag rollback preserves every historical fact and disables future V0 entry.
+
+## 13. Fresh joined evidence and independent verification
+
+After the hostile regressions pass, run one fresh synthetic Case A episode through a real NTM/Codex worker. Do not reuse the previous successful database rows, output directory, proposal, candidate, receipt, or correction seed.
+
+The worker return must include exact commits, changed files, migration evidence, commands, test counts, live work-order and artifact digests, failure/retry evidence, rollback evidence, and `docs/pro/evidence/CASE_A_REPAIR_1_RECEIPT.md`.
+
+The worker has no merge, integration, checkpoint, ledger, deployment, or completion-claim authority.
+
+A fresh independent verifier must reproduce the P0 and P1 counterexamples and the joined episode before PRO may integrate the repair or restore a verified-V0 claim.
 
 ## 14. Stop conditions
 
-The repair worker must stop and return exact evidence when:
+Stop and return `FAIL` or `PARTIAL` when:
 
-- the rejected base moved or contains unexpected additional code;
-- the repair requires weakening append-only, owner, closed-source, or synthetic-use boundaries;
-- the database cannot recompute the target-specific decision without trusting application-authored `PASS` fields;
-- a candidate cannot be transactionally joined to one receipt;
-- runtime/calc retry requires mutating prior evidence;
-- migration `0007` cannot preserve upgrade and rollback evidence;
-- a second repair attempt fails with the same causal diagnosis; or
-- any protected data, personal workbook, external release, or professional reliance authority becomes necessary.
+- canonical admission cannot be computed at the PostgreSQL boundary;
+- candidate/receipt completeness cannot be enforced at transaction completion;
+- repair cannot be made single-use and retryable without rewriting history;
+- runtime/refusal/calculation failure still depends on in-memory state;
+- a bounded failure still produces HTTP 500;
+- migration 0007 requires destructive mutation or rewriting 0005/0006;
+- the UI requires source IDs, raw packets, NTM controls, or professional-use language;
+- a required file outside Packet 008 ownership must change;
+- the real NTM/Codex path cannot run with search closed; or
+- a hostile regression cannot be made deterministic.
+
+Do not weaken a finding, silently widen scope, or hide a failure behind a prompt, fixture, mock, classifier exception, or manually inserted artifact.
 
 ## 15. Claim ceiling
 
-Successful repair would establish only a repaired synthetic Case A candidate ready for fresh hostile verification. It would not establish analyst usefulness, professional correctness, permission to rely, Excel compatibility, arbitrary workbook support, tenant security, harness improvement, deployment, client readiness, or verified V0.
+This contract authorises one bounded repair attempt on the rejected synthetic Case A branch. It does not establish a repaired product, verified V0, analyst usefulness, professional correctness, permission to rely, Excel compatibility, arbitrary workbook support, tenant security, harness improvement, deployment, or client readiness.
