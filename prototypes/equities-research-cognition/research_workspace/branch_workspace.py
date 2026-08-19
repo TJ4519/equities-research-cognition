@@ -19,6 +19,12 @@ from .util import (
 )
 
 
+PACKAGE_ROOT = Path(__file__).resolve().parents[1]
+PERSISTENT_BRANCH_PROTOCOL = (
+    PACKAGE_ROOT / "agents" / "persistent_research_branch" / "protocol.md"
+)
+
+
 @dataclass(frozen=True)
 class BranchAttemptPaths:
     root: Path
@@ -39,6 +45,12 @@ def _json(path: Path, label: str, *, max_bytes: int = 2 * 1024 * 1024) -> dict[s
     if not isinstance(value, dict):
         raise IntegrityError(f"{label} must contain one JSON object")
     return value
+
+
+def _protocol_bytes() -> bytes:
+    if PERSISTENT_BRANCH_PROTOCOL.is_symlink() or not PERSISTENT_BRANCH_PROTOCOL.is_file():
+        raise ValidationError("persistent research-branch protocol is unavailable")
+    return read_regular_file(PERSISTENT_BRANCH_PROTOCOL, max_bytes=256 * 1024)
 
 
 def branches_root(store: WorkspaceStore) -> Path:
@@ -193,6 +205,9 @@ def create_attempt_workspace(
     ):
         directory.mkdir(parents=True, mode=0o700, exist_ok=False)
     atomic_write(paths.root / "branch.json", _projection(branch))
+    protocol = _protocol_bytes()
+    protocol_digest = digest_bytes(protocol)
+    atomic_write(paths.root / "AGENTS.md", protocol, mode=0o400)
     context_receipts = [add_context_snapshot(store, paths, context_id) for context_id in context_ids]
     input_rows: list[dict[str, str]] = []
     for object_id in input_object_ids:
@@ -224,6 +239,12 @@ def create_attempt_workspace(
         "branch_id": branch.id,
         "branch_digest": branch.digest,
         "binding_id": binding_id,
+        "standing_protocol": {
+            "schema": "research-branch-standing-protocol/v1",
+            "source": PERSISTENT_BRANCH_PROTOCOL.relative_to(PACKAGE_ROOT).as_posix(),
+            "relative_path": "AGENTS.md",
+            "sha256": protocol_digest,
+        },
         "contexts": context_receipts,
         "inputs": input_rows,
         "resume_checkpoint": checkpoint_row,
@@ -263,6 +284,16 @@ def verify_attempt_workspace(
         raise IntegrityError("branch attempt manifest must be an object")
     if manifest.get("branch_id") != branch.id or manifest.get("binding_id") != binding.id:
         raise IntegrityError("branch attempt manifest names the wrong binding")
+    protocol = manifest.get("standing_protocol")
+    if not isinstance(protocol, dict):
+        raise IntegrityError("branch attempt lacks a standing protocol")
+    if protocol.get("schema") != "research-branch-standing-protocol/v1":
+        raise IntegrityError("branch standing protocol has the wrong schema")
+    if protocol.get("relative_path") != "AGENTS.md":
+        raise IntegrityError("branch standing protocol uses an unexpected path")
+    protocol_bytes = read_regular_file(paths.root / "AGENTS.md", max_bytes=256 * 1024)
+    if digest_bytes(protocol_bytes) != protocol.get("sha256"):
+        raise IntegrityError("branch standing protocol changed")
     for row in manifest.get("contexts", []):
         verify_context_snapshot(paths, row["context_id"])
     for row in manifest.get("inputs", []):
