@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from .service_base import BaseServiceMixin
 from .service_branch_authority import AcknowledgedBranchAuthorityMixin
+from .service_branch_policy import PersistentBranchPolicyMixin
 from .service_branches import BranchServiceMixin
 from .service_context import ContextServiceMixin
 from .service_decisions import DecisionServiceMixin
@@ -12,6 +13,7 @@ from .service_types import BranchLaunchOutcome, BranchResultOutcome, RunOutcome
 
 
 class ResearchWorkspace(
+    PersistentBranchPolicyMixin,
     AcknowledgedBranchAuthorityMixin,
     BranchServiceMixin,
     ConformanceRunPolicyMixin,
