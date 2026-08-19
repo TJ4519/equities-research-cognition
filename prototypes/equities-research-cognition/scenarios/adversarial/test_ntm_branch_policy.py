@@ -22,8 +22,9 @@ class BranchPolicyFixture:
         self.root = root
         self.workspace = ResearchWorkspace.initialise(root / "workspace")
         self.controller = FakeNtmControl()
-        self.config = root / "ntm-config.json"
-        self.config.write_text("{}", encoding="utf-8")
+        self.codex_binary = root / "fake-codex"
+        self.codex_binary.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+        self.codex_binary.chmod(0o700)
         mandate = self.workspace.create_mandate(
             title="Persistent branch policy",
             decision_use="Internal research",
@@ -123,7 +124,7 @@ class BranchPolicyFixture:
         return self.workspace.launch_research_branch(
             branch_id=self.branch.id,
             controller=self.controller,
-            config=self.config,
+            codex_binary=self.codex_binary.resolve(),
             model="gpt-5.6-codex",
             role_name="research_worker",
             actor="analyst",
@@ -258,7 +259,6 @@ class PersistentBranchPolicyTests(unittest.TestCase):
                 branch_id=self.fixture.branch.id,
                 binding_id=first.binding_id,
                 controller=self.fixture.controller,
-                config=self.fixture.config,
             )
         self.assertEqual(
             second.binding_id,
