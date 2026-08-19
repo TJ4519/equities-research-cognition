@@ -7,12 +7,14 @@ from .service_context import ContextServiceMixin
 from .service_decisions import DecisionServiceMixin
 from .service_evidence import EvidenceServiceMixin
 from .service_run import RunServiceMixin
+from .service_run_policy import ConformanceRunPolicyMixin
 from .service_types import BranchLaunchOutcome, BranchResultOutcome, RunOutcome
 
 
 class ResearchWorkspace(
     AcknowledgedBranchAuthorityMixin,
     BranchServiceMixin,
+    ConformanceRunPolicyMixin,
     RunServiceMixin,
     ContextServiceMixin,
     EvidenceServiceMixin,
