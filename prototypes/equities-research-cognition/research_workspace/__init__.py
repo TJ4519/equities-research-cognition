@@ -7,13 +7,24 @@ from .errors import (
     ValidationError,
     WorkspaceError,
 )
+from .ntm_research import NtmControl, NtmReceipt, NtmResearchController
 from .replay import ReplayEngine
-from .service import ResearchWorkspace, RunOutcome
+from .service import (
+    BranchLaunchOutcome,
+    BranchResultOutcome,
+    ResearchWorkspace,
+    RunOutcome,
+)
 from .store import StoredBlob, StoredObject, StoredRelation, WorkspaceStore
 
 __all__ = [
     "AuthorityError",
+    "BranchLaunchOutcome",
+    "BranchResultOutcome",
     "IntegrityError",
+    "NtmControl",
+    "NtmReceipt",
+    "NtmResearchController",
     "ReplayEngine",
     "ResearchWorkspace",
     "RunOutcome",
