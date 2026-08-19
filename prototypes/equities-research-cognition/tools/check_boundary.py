@@ -103,6 +103,7 @@ ALLOWED_OS_IMPORTS = {
     "O_TRUNC",
     "O_WRONLY",
     "chmod",
+    "close",
     "environ",
     "fdopen",
     "fsync",
