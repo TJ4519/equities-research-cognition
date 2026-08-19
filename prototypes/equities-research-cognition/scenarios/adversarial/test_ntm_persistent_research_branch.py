@@ -68,8 +68,12 @@ class PersistentResearchBranchTests(unittest.TestCase):
         self.root = Path(self.temporary.name)
         self.workspace = ResearchWorkspace.initialise(self.root / "workspace")
         self.controller = FakeNtmControl()
-        self.config = self.root / "ntm-config.json"
-        self.config.write_text("{}", encoding="utf-8")
+        self.codex_binary = self.root / "fake-codex"
+        self.codex_binary.write_text(
+            "#!/bin/sh\nexit 0\n",
+            encoding="utf-8",
+        )
+        self.codex_binary.chmod(0o700)
 
         self.mandate = self.workspace.create_mandate(
             title="Micron historical replay",
@@ -197,7 +201,7 @@ class PersistentResearchBranchTests(unittest.TestCase):
         return self.workspace.launch_research_branch(
             branch_id=self.branch.id,
             controller=self.controller,
-            config=self.config,
+            codex_binary=self.codex_binary.resolve(),
             model="gpt-5.6-codex",
             role_name="research_worker",
             actor="analyst",
@@ -352,7 +356,6 @@ class PersistentResearchBranchTests(unittest.TestCase):
             binding_id=binding_id,
             context_id=delta_context.id,
             controller=self.controller,
-            config=self.config,
             actor="analyst",
             satisfies_source_request_ids=[source_request.id],
         )
@@ -395,7 +398,6 @@ class PersistentResearchBranchTests(unittest.TestCase):
             branch_id=self.branch.id,
             binding_id=binding_id,
             controller=self.controller,
-            config=self.config,
         )
         note = paths.artifacts / "micron-note.md"
         atomic_write(
@@ -457,7 +459,6 @@ class PersistentResearchBranchTests(unittest.TestCase):
             branch_id=self.branch.id,
             binding_id=launch.binding_id,
             controller=self.controller,
-            config=self.config,
         )
         with self.assertRaises(RuntimeFailure):
             self.workspace.collect_branch_result(
@@ -508,7 +509,6 @@ class PersistentResearchBranchTests(unittest.TestCase):
             binding_id=launch.binding_id,
             context_id=context.id,
             controller=self.controller,
-            config=self.config,
             actor="analyst",
         )
         paths = attempt_paths(self.workspace.store, self.branch.id, launch.binding_id)
