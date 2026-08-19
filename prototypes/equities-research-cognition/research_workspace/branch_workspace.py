@@ -307,6 +307,9 @@ def verify_attempt_workspace(
         path = ensure_inside(paths.root, paths.root / safe_relative_path(checkpoint["path"]))
         if _json(path, f"resume checkpoint {item.id}") != json.loads(_projection(item)):
             raise IntegrityError("resume checkpoint projection changed")
+    from .codex_session import verify_codex_session_control
+
+    verify_codex_session_control(paths, manifest)
     return paths, manifest
 
 
