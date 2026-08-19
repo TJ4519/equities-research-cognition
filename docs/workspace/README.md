@@ -2,19 +2,20 @@
 
 Status: V0 implementation is active on `agent/local-workspace-vertical-v0`. The parent planning branch remains available in draft PR 13.
 
-The product under test is a local-first research workspace that a capable terminal agent can inhabit. The analyst states professional work in ordinary language. Skills help the agent recover prior work, propose an interpretation, assemble exact context, invoke supported methods, create artifacts, accept correction, and resume later. A local service owns source identity, exact bytes, context construction, durable relations, permissions, artifact ancestry, and replay.
+The product under test is a local-first research workspace inhabited by persistent Codex sessions created and managed through NTM. The analyst states professional work in ordinary language. Skills help Codex recover prior work, propose an interpretation, assemble exact context, invoke supported methods, create artifacts, accept correction, and resume later. A local service owns source identity, exact bytes, context construction, durable relations, permissions, artifact ancestry, and replay.
 
-The existing Django application remains useful prior machinery. Its campaigns, Casebook, NTM controls, and research-state language do not define the workspace.
+The existing Django application remains useful prior machinery. Its campaigns, Casebook, and research-state language do not define the workspace. NTM remains the runtime that instantiates and preserves Codex research sessions.
 
 ## Reading order
 
 1. `FOUNDATION.md` states the product and commercial thesis.
 2. `CONCEPTUAL_MODEL.md` defines the durable relations beneath terminal and web views.
 3. `INFERENCE_STATE_REPLAY.md` defines re-derivation and counterfactual comparison.
-4. `LOCAL_FIRST_ARCHITECTURE.md` describes the intended local and shared system.
-5. `COUNTERFACTUALS.md` attacks the design through rival products and research cases.
-6. `MASTER_PLAN.md` records the active end-to-end build sequence.
-7. `IMPLEMENTATION_STATUS.md` states what the joined V0 proves and does not prove.
+4. `NTM_CODEX_RUNTIME.md` defines the persistent Codex research runtime and prohibits `codex exec`.
+5. `LOCAL_FIRST_ARCHITECTURE.md` describes the intended local and shared system.
+6. `COUNTERFACTUALS.md` attacks the design through rival products and research cases.
+7. `MASTER_PLAN.md` records the active end-to-end build sequence.
+8. `IMPLEMENTATION_STATUS.md` states what the joined V0 proves and does not prove.
 
 ## Implemented vertical
 
@@ -28,7 +29,7 @@ workspace and mandate
 -> human-confirmed professional objects
 -> purpose-specific evidence decisions
 -> sealed assertion-level context
--> direct replaceable child process
+-> deterministic conformance process
 -> host-validated claims and cited artifact
 -> scoped use decision
 -> correction and confirmed memory
@@ -41,16 +42,22 @@ The Micron equal-value case appears inside the path. The earnings-release assert
 
 ## Present boundary
 
-The local process adapter binds a known executable to one exact context directory, a minimal environment, a timeout, and a host-validated output population. It does not provide operating-system filesystem or network isolation.
+The local process adapter binds a known executable to one exact context directory, a minimal environment, a timeout, and a host-validated output population. It is a deterministic conformance runner. It is not an alternative Codex runtime and must not launch Codex.
 
-A support context contains exact admitted assertion extracts and source receipts. It does not contain full source bytes. Full-document discovery will require a separate permission and context.
+Codex research runs in persistent NTM-managed sessions. The host should bind each durable research branch to an NTM session and pane, send exact context and instructions, receive semantic acknowledgements and checkpoints, and take custody of typed results. NTM reporting `complete` does not by itself complete professional work.
 
-The reference method is deterministic. It proves context, result, artifact, correction, memory, and replay mechanics. It does not prove useful frontier-model research.
+A support context contains exact admitted assertion extracts and source receipts. It does not contain full source bytes. Full-document discovery requires a separate permission and context.
+
+The reference method is deterministic. It proves context, result, artifact, correction, memory, and replay mechanics. It does not prove useful Codex research.
 
 ## Next integrated build
 
-The next build should connect a real terminal-agent runner to the same context and result contract, add a separate discovery context that captures newly found sources through the host, and implement evidential re-derivation for model-written claims.
+The next build should join the new local authority layer to the existing NTM-managed persistent Codex architecture.
 
-The first useful native artifact action should then follow observed analyst work. A reproducible calculation or amendment to a prior research note may prove value sooner than a full Excel integration.
+It should create durable research branches, bind them to NTM sessions and panes, send sealed starting contexts, accept host-mediated source additions, record branch checkpoints, run fresh NTM-managed challenge sessions where warranted, and collect typed results through the existing authority checks.
+
+No `codex exec` route is permitted. Model-mediated replay must use a fresh NTM-managed Codex session. The deterministic process runner remains available only for fixture and conformance work.
+
+The first useful native artifact action should follow observed analyst work. A reproducible calculation or amendment to a prior research note may prove value sooner than a full Excel integration.
 
 A shared SaaS service remains deferred until repeated local use establishes a need for team identity, licensed connectors, schedules, synchronisation, and controlled method release.
