@@ -105,6 +105,7 @@ ALLOWED_OS_IMPORTS = {
     "chmod",
     "close",
     "environ",
+    "fchmod",
     "fdopen",
     "fsync",
     "fstat",
