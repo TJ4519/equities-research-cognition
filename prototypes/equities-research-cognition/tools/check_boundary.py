@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail closed when the cognition package regains a second runtime authority."""
+"""Fail closed when the cognition package gains an unreviewed runtime authority."""
 
 from __future__ import annotations
 
@@ -13,10 +13,13 @@ WORKSPACE_ROOT = PACKAGE_ROOT.parents[1]
 PRODUCT_ROOT = PACKAGE_ROOT / "product"
 HARNESS_ROOT = PACKAGE_ROOT / "harness"
 NTM_ROOT = HARNESS_ROOT / "ntm"
+LOCAL_WORKSPACE_ROOT = PACKAGE_ROOT / "research_workspace"
+LOCAL_PROCESS_PATH = LOCAL_WORKSPACE_ROOT / "runtime.py"
 SCENARIO_ROOT = PACKAGE_ROOT / "scenarios"
 RUNTIME_SURFACES = (
     PRODUCT_ROOT,
     HARNESS_ROOT,
+    LOCAL_WORKSPACE_ROOT,
     PACKAGE_ROOT / "agents",
     PACKAGE_ROOT / "workbenches",
     PACKAGE_ROOT / "manage.py",
@@ -48,38 +51,73 @@ FORBIDDEN_REFERENCES = (
 )
 ALLOWED_MODULE_ROOTS = {
     "__future__",
+    "argparse",
     "base64",
+    "collections",
+    "contextlib",
     "ctypes",
     "dataclasses",
     "datetime",
     "decimal",
     "django",
-    "google",
     "getpass",
+    "google",
     "harness",
     "hashlib",
     "http",
     "ipaddress",
     "json",
+    "mimetypes",
     "opentelemetry",
     "os",
     "pathlib",
     "platform",
     "product",
     "re",
+    "research_workspace",
     "selectors",
     "shlex",
     "shutil",
+    "signal",
     "socket",
+    "sqlite3",
     "stat",
     "struct",
     "subprocess",
     "sys",
+    "tempfile",
     "threading",
     "time",
     "typing",
     "urllib",
     "uuid",
+    "zipfile",
+}
+ALLOWED_OS_IMPORTS = {
+    "O_CLOEXEC",
+    "O_CREAT",
+    "O_DIRECTORY",
+    "O_EXCL",
+    "O_NOFOLLOW",
+    "O_RDONLY",
+    "O_TRUNC",
+    "O_WRONLY",
+    "chmod",
+    "environ",
+    "fdopen",
+    "fsync",
+    "fstat",
+    "geteuid",
+    "getgid",
+    "getpgid",
+    "getpid",
+    "getuid",
+    "killpg",
+    "open",
+    "readlink",
+    "replace",
+    "unlink",
+    "walk",
 }
 FORBIDDEN_CALLS = {
     "__import__",
@@ -133,7 +171,7 @@ def violations(runtime_root: Path | None = None) -> list[str]:
             if path.exists() or path.is_symlink():
                 found.append(f"vacated root authority still exists: {path}")
 
-    for root in (PRODUCT_ROOT, HARNESS_ROOT, SCENARIO_ROOT):
+    for root in (PRODUCT_ROOT, HARNESS_ROOT, LOCAL_WORKSPACE_ROOT, SCENARIO_ROOT):
         if not root.exists():
             continue
         for cache in root.rglob("*.pyc"):
@@ -182,23 +220,7 @@ def violations(runtime_root: Path | None = None) -> list[str]:
                     allowed = (
                         isinstance(node, ast.ImportFrom)
                         and node.module == "os"
-                        and all(
-                            alias.name
-                            in {
-                                "environ",
-                                "fdopen",
-                                "fsync",
-                                "fstat",
-                                "geteuid",
-                                "getuid",
-                                "O_NOFOLLOW",
-                                "O_RDONLY",
-                                "open",
-                                "readlink",
-                                "walk",
-                            }
-                            for alias in node.names
-                        )
+                        and all(alias.name in ALLOWED_OS_IMPORTS for alias in node.names)
                     )
                     if not allowed:
                         found.append(
@@ -212,7 +234,10 @@ def violations(runtime_root: Path | None = None) -> list[str]:
                     )
             if isinstance(node, ast.Call):
                 name = dotted_name(node.func)
-                allowed_process = path.is_relative_to(NTM_ROOT) and name in {
+                allowed_process_path = (
+                    path.is_relative_to(NTM_ROOT) or path == LOCAL_PROCESS_PATH
+                )
+                allowed_process = allowed_process_path and name in {
                     "subprocess.run",
                     "subprocess.Popen",
                 }
@@ -224,7 +249,7 @@ def violations(runtime_root: Path | None = None) -> list[str]:
                     isinstance(shell, ast.Constant) and shell.value is False
                 ):
                     found.append(
-                        f"NTM subprocess must set shell=False: {path}:{node.lineno}"
+                        f"approved subprocess must set shell=False: {path}:{node.lineno}"
                     )
                 elif not allowed_process and (
                     name in FORBIDDEN_CALLS or name.startswith("subprocess.")
