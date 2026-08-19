@@ -1,21 +1,14 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import json
 from pathlib import Path
 import re
 import shlex
 from typing import Any
 
-from .branch_workspace import BranchAttemptPaths
 from .errors import IntegrityError, ValidationError
-from .util import (
-    atomic_write,
-    canonical_json,
-    digest_bytes,
-    ensure_inside,
-    read_regular_file,
-)
+from .store import WorkspaceStore
+from .util import atomic_write, canonical_json, digest_bytes, ensure_inside, read_regular_file
 
 
 MODEL_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._/@:+-]{0,127}")
@@ -36,14 +29,14 @@ class CodexSessionControl:
     approval_policy: str
     search_enabled: bool
 
-    def manifest(self, *, root: Path) -> dict[str, Any]:
+    def payload(self) -> dict[str, Any]:
         return {
-            "schema": "research-codex-session-control/v1",
+            "schema": "research-codex-launch/v1",
             "codex_binary_path": self.codex_binary_path,
             "codex_binary_digest": self.codex_binary_digest,
-            "launcher_path": Path(self.launcher_path).relative_to(root).as_posix(),
+            "launcher_path": self.launcher_path,
             "launcher_digest": self.launcher_digest,
-            "ntm_config_path": Path(self.ntm_config_path).relative_to(root).as_posix(),
+            "ntm_config_path": self.ntm_config_path,
             "ntm_config_digest": self.ntm_config_digest,
             "model": self.model,
             "sandbox": self.sandbox,
@@ -73,8 +66,16 @@ def _toml_literal(value: str, label: str) -> str:
     return value
 
 
+def control_root(store: WorkspaceStore) -> Path:
+    root = ensure_inside(store.control, store.control / "codex-sessions")
+    root.mkdir(mode=0o700, exist_ok=True)
+    if root.is_symlink():
+        raise IntegrityError("Codex session-control root cannot be a symlink")
+    return root
+
+
 def build_codex_session_control(
-    paths: BranchAttemptPaths,
+    store: WorkspaceStore,
     *,
     codex_binary: Path,
     model: str,
@@ -84,9 +85,9 @@ def build_codex_session_control(
 ) -> CodexSessionControl:
     """Build one content-addressed interactive Codex launcher for NTM.
 
-    The launcher starts the ordinary interactive Codex CLI. It never invokes
-    ``codex exec``. NTM remains responsible for creating and preserving the
-    session.
+    NTM supplies the exact persistent-session working directory. The launcher
+    starts the ordinary interactive Codex CLI in that directory. It never
+    invokes ``codex exec``.
     """
 
     model = _require_model(model)
@@ -95,8 +96,7 @@ def build_codex_session_control(
     if approval_policy not in APPROVAL_POLICIES:
         raise ValidationError("Codex approval policy is unsupported")
     codex_binary, codex_bytes = _regular_executable(codex_binary)
-    control_root = ensure_inside(paths.root, paths.root / "_control")
-    control_root.mkdir(mode=0o700, exist_ok=False)
+    root = control_root(store)
 
     argv = [
         str(codex_binary),
@@ -107,16 +107,19 @@ def build_codex_session_control(
     ]
     if search_enabled:
         argv.append("--search")
-    argv.extend(["--cd", str(paths.root)])
     command = " ".join(shlex.quote(item) for item in argv)
     launcher = (
         "#!/bin/sh\n"
         "set -eu\n"
-        f"exec {command} -m \"$1\"\n"
+        f"exec {command} --cd \"$PWD\" -m \"$1\"\n"
     ).encode("utf-8")
     launcher_digest = digest_bytes(launcher)
-    launcher_path = control_root / f"codex-{launcher_digest}.sh"
-    atomic_write(launcher_path, launcher, mode=0o700)
+    launcher_path = root / f"codex-{launcher_digest}.sh"
+    if launcher_path.exists():
+        if read_regular_file(launcher_path, max_bytes=256 * 1024) != launcher:
+            raise IntegrityError("content-addressed Codex launcher changed")
+    else:
+        atomic_write(launcher_path, launcher, mode=0o700)
 
     launcher_literal = _toml_literal(str(launcher_path), "Codex launcher path")
     model_literal = _toml_literal(model, "Codex model")
@@ -130,8 +133,12 @@ def build_codex_session_control(
         f'default_codex = "{model_literal}"\n'
     ).encode("utf-8")
     config_digest = digest_bytes(config)
-    config_path = control_root / f"ntm-{config_digest}.toml"
-    atomic_write(config_path, config, mode=0o600)
+    config_path = root / f"ntm-{config_digest}.toml"
+    if config_path.exists():
+        if read_regular_file(config_path, max_bytes=256 * 1024) != config:
+            raise IntegrityError("content-addressed NTM Codex config changed")
+    else:
+        atomic_write(config_path, config, mode=0o600)
 
     control = CodexSessionControl(
         codex_binary_path=str(codex_binary),
@@ -145,75 +152,60 @@ def build_codex_session_control(
         approval_policy=approval_policy,
         search_enabled=bool(search_enabled),
     )
-    atomic_write(
-        control_root / "control-manifest.json",
-        canonical_json(control.manifest(root=paths.root)).encode("utf-8"),
-    )
+    manifest_path = root / f"control-{config_digest}.json"
+    content = canonical_json(control.payload()).encode("utf-8")
+    if manifest_path.exists():
+        if read_regular_file(manifest_path, max_bytes=256 * 1024) != content:
+            raise IntegrityError("content-addressed Codex control manifest changed")
+    else:
+        atomic_write(manifest_path, content)
     return control
 
 
-def attach_control_to_attempt(
-    paths: BranchAttemptPaths,
-    control: CodexSessionControl,
-) -> str:
-    manifest_path = paths.root / "attempt-manifest.json"
-    try:
-        manifest = json.loads(read_regular_file(manifest_path, max_bytes=2 * 1024 * 1024))
-    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
-        raise IntegrityError("branch attempt manifest is invalid JSON") from exc
-    if not isinstance(manifest, dict):
-        raise IntegrityError("branch attempt manifest must be an object")
-    if "codex_session_control" in manifest:
-        raise IntegrityError("branch attempt already has a Codex session control")
-    manifest["codex_session_control"] = control.manifest(root=paths.root)
-    content = canonical_json(manifest).encode("utf-8")
-    atomic_write(manifest_path, content)
-    return digest_bytes(content)
-
-
-def verify_codex_session_control(
-    paths: BranchAttemptPaths,
-    manifest: dict[str, Any],
-) -> CodexSessionControl:
-    raw = manifest.get("codex_session_control")
-    if not isinstance(raw, dict) or raw.get("schema") != "research-codex-session-control/v1":
-        raise IntegrityError("branch attempt lacks a valid Codex session control")
-    model = _require_model(str(raw.get("model", "")))
-    sandbox = str(raw.get("sandbox", ""))
-    approval_policy = str(raw.get("approval_policy", ""))
+def verify_codex_session_control(payload: dict[str, Any]) -> CodexSessionControl:
+    if payload.get("schema") != "research-codex-launch/v1":
+        raise IntegrityError("Codex launch object has the wrong schema")
+    model = _require_model(str(payload.get("model", "")))
+    sandbox = str(payload.get("sandbox", ""))
+    approval_policy = str(payload.get("approval_policy", ""))
     if sandbox not in SANDBOX_MODES or approval_policy not in APPROVAL_POLICIES:
-        raise IntegrityError("Codex session control names an unsupported policy")
-    codex_path = Path(str(raw.get("codex_binary_path", "")))
-    if codex_path.is_symlink() or not codex_path.is_absolute() or not codex_path.is_file():
-        raise IntegrityError("bound Codex executable is unavailable")
+        raise IntegrityError("Codex launch names an unsupported policy")
+    codex_path = Path(str(payload.get("codex_binary_path", "")))
+    launcher_path = Path(str(payload.get("launcher_path", "")))
+    config_path = Path(str(payload.get("ntm_config_path", "")))
+    for path, label, limit in (
+        (codex_path, "Codex executable", 512 * 1024 * 1024),
+        (launcher_path, "Codex launcher", 256 * 1024),
+        (config_path, "NTM Codex config", 256 * 1024),
+    ):
+        if path.is_symlink() or not path.is_absolute() or not path.is_file():
+            raise IntegrityError(f"{label} is unavailable")
+        read_regular_file(path, max_bytes=limit)
     codex_content = read_regular_file(codex_path, max_bytes=512 * 1024 * 1024)
-    if digest_bytes(codex_content) != raw.get("codex_binary_digest"):
-        raise IntegrityError("bound Codex executable changed")
-    launcher_path = ensure_inside(
-        paths.root,
-        paths.root / Path(str(raw.get("launcher_path", ""))),
-    )
-    config_path = ensure_inside(
-        paths.root,
-        paths.root / Path(str(raw.get("ntm_config_path", ""))),
-    )
     launcher = read_regular_file(launcher_path, max_bytes=256 * 1024)
     config = read_regular_file(config_path, max_bytes=256 * 1024)
-    if digest_bytes(launcher) != raw.get("launcher_digest"):
+    if digest_bytes(codex_content) != payload.get("codex_binary_digest"):
+        raise IntegrityError("bound Codex executable changed")
+    if digest_bytes(launcher) != payload.get("launcher_digest"):
         raise IntegrityError("Codex launcher changed")
-    if digest_bytes(config) != raw.get("ntm_config_digest"):
-        raise IntegrityError("NTM Codex configuration changed")
-    if b"codex exec" in launcher or b" exec " not in launcher:
+    if digest_bytes(config) != payload.get("ntm_config_digest"):
+        raise IntegrityError("NTM Codex config changed")
+    if b"codex exec" in launcher or b"--cd \"$PWD\"" not in launcher:
         raise IntegrityError("Codex launcher violates the persistent-session contract")
+    expected_search = bool(payload.get("search_enabled"))
+    if (b" --search " in launcher) != expected_search:
+        raise IntegrityError("Codex launcher search policy disagrees with its record")
+    if model.encode("utf-8") not in config:
+        raise IntegrityError("NTM Codex config does not contain the bound model")
     return CodexSessionControl(
         codex_binary_path=str(codex_path),
-        codex_binary_digest=str(raw["codex_binary_digest"]),
+        codex_binary_digest=str(payload["codex_binary_digest"]),
         launcher_path=str(launcher_path),
-        launcher_digest=str(raw["launcher_digest"]),
+        launcher_digest=str(payload["launcher_digest"]),
         ntm_config_path=str(config_path),
-        ntm_config_digest=str(raw["ntm_config_digest"]),
+        ntm_config_digest=str(payload["ntm_config_digest"]),
         model=model,
         sandbox=sandbox,
         approval_policy=approval_policy,
-        search_enabled=bool(raw.get("search_enabled")),
+        search_enabled=expected_search,
     )
