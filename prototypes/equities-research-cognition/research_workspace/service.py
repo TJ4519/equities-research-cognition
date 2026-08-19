@@ -4,6 +4,7 @@ from .service_base import BaseServiceMixin
 from .service_branch_authority import AcknowledgedBranchAuthorityMixin
 from .service_branch_policy import PersistentBranchPolicyMixin
 from .service_branches import BranchServiceMixin
+from .service_codex_launch import MachineOwnedCodexLaunchMixin
 from .service_context import ContextServiceMixin
 from .service_decisions import DecisionServiceMixin
 from .service_evidence import EvidenceServiceMixin
@@ -13,6 +14,7 @@ from .service_types import BranchLaunchOutcome, BranchResultOutcome, RunOutcome
 
 
 class ResearchWorkspace(
+    MachineOwnedCodexLaunchMixin,
     PersistentBranchPolicyMixin,
     AcknowledgedBranchAuthorityMixin,
     BranchServiceMixin,
