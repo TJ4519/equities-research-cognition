@@ -162,7 +162,7 @@ def build_codex_session_control(
     return control
 
 
-def verify_codex_session_control(payload: dict[str, Any]) -> CodexSessionControl:
+def _verify_payload(payload: dict[str, Any]) -> CodexSessionControl:
     if payload.get("schema") != "research-codex-launch/v1":
         raise IntegrityError("Codex launch object has the wrong schema")
     model = _require_model(str(payload.get("model", "")))
@@ -209,3 +209,27 @@ def verify_codex_session_control(payload: dict[str, Any]) -> CodexSessionControl
         approval_policy=approval_policy,
         search_enabled=expected_search,
     )
+
+
+def verify_codex_session_control(
+    payload_or_paths: dict[str, Any] | object,
+    manifest: dict[str, Any] | None = None,
+) -> CodexSessionControl | None:
+    """Verify a canonical launch object.
+
+    The optional two-argument form tolerates attempt manifests written before
+    the launch became a separate authority object. New research bindings must
+    carry a canonical ``codex_launch`` relation and are verified by the service
+    policy before state changes.
+    """
+
+    if manifest is not None:
+        embedded = manifest.get("codex_session_control")
+        if embedded is None:
+            return None
+        if not isinstance(embedded, dict):
+            raise IntegrityError("embedded Codex session control is malformed")
+        return _verify_payload(embedded)
+    if not isinstance(payload_or_paths, dict):
+        raise IntegrityError("Codex launch payload is malformed")
+    return _verify_payload(payload_or_paths)
