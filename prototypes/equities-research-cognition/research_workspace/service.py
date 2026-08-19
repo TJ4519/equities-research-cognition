@@ -8,6 +8,7 @@ from .service_branches import BranchServiceMixin
 from .service_codex_launch import MachineOwnedCodexLaunchMixin
 from .service_context import ContextServiceMixin
 from .service_decisions import DecisionServiceMixin
+from .service_discovery_branch import DiscoveryBranchServiceMixin
 from .service_discovery_context import DiscoveryContextServiceMixin
 from .service_evidence import EvidenceServiceMixin
 from .service_run import RunServiceMixin
@@ -20,6 +21,7 @@ class ResearchWorkspace(
     MachineOwnedCodexLaunchMixin,
     PersistentBranchPolicyMixin,
     AcknowledgedBranchAuthorityMixin,
+    DiscoveryBranchServiceMixin,
     BranchServiceMixin,
     ConformanceRunPolicyMixin,
     RunServiceMixin,
