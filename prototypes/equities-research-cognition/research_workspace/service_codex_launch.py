@@ -12,14 +12,23 @@ class MachineOwnedCodexLaunchMixin:
     """Generate and verify the Codex launch used by every NTM binding."""
 
     def _search_enabled_for_branch(self, branch_id: str) -> bool:
-        branch = self._require_kind(branch_id, "research_branch")
-        if branch.payload["branch_kind"] != "discovery":
-            return False
-        for context_id in self._branch_context_ids(branch_id):
-            context = self._require_kind(context_id, "context")
-            if "codex_search" in context.payload.get("allowed_tools", []):
-                return True
-        return False
+        contexts = [
+            self._require_kind(context_id, "context")
+            for context_id in self._branch_context_ids(branch_id)
+        ]
+        kinds = {
+            context.payload.get("context_kind", "support")
+            for context in contexts
+        }
+        requested = any(
+            "codex_search" in context.payload.get("allowed_tools", [])
+            for context in contexts
+        )
+        if requested and kinds != {"discovery"}:
+            raise IntegrityError(
+                "Codex search may be granted only to a pure discovery branch"
+            )
+        return requested
 
     def _binding_control(self, binding_id: str):
         binding = self._require_kind(binding_id, "ntm_binding")
