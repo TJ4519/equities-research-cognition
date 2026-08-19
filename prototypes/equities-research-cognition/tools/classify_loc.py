@@ -58,6 +58,8 @@ def category(path: Path) -> str:
         return "schema"
     if relative.startswith("scenarios/"):
         return "tests"
+    if relative.startswith("spikes/"):
+        return "spike_code"
     if (
         relative
         in {
@@ -133,7 +135,7 @@ def classify() -> dict[str, object]:
         totals[name]
         for name in ("operational_code", "schema", "support_code", "docs_data")
     )
-    reviewed = shipped + totals["tests"]
+    reviewed = shipped + totals["tests"] + totals["spike_code"]
     architecture_review_required = (
         totals["operational_code"] > OPERATIONAL_CODE_REVIEW_THRESHOLD
     )
@@ -160,7 +162,7 @@ def classify() -> dict[str, object]:
             ).as_posix(),
             "recorded": architecture_review_recorded,
         },
-        "reviewed_with_tests_total": reviewed,
+        "reviewed_with_tests_and_spikes_total": reviewed,
         "runtime_and_schema_total": (
             totals["operational_code"] + totals["schema"]
         ),
@@ -172,6 +174,11 @@ def classify() -> dict[str, object]:
             "data_files": sum(row["category"] == "binary_data" for row in rows),
             "data_bytes": bytes_by_category["binary_data"],
             "counted_as_text_lines": False,
+        },
+        "spikes": {
+            "physical_lines": totals["spike_code"],
+            "physical_bytes": bytes_by_category["spike_code"],
+            "counted_as_shipped_product": False,
         },
         "third_party_environment": {
             "files": third_party_files,
