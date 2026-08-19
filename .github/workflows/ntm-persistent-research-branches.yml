@@ -1,0 +1,49 @@
+name: NTM persistent research branches
+
+on:
+  push:
+    branches:
+      - agent/ntm-persistent-research-branches-v0
+  pull_request:
+    paths:
+      - "prototypes/equities-research-cognition/research_workspace/**"
+      - "prototypes/equities-research-cognition/agents/persistent_research_branch/**"
+      - "prototypes/equities-research-cognition/harness/ntm/**"
+      - "prototypes/equities-research-cognition/scenarios/adversarial/test_ntm_*.py"
+      - "prototypes/equities-research-cognition/tools/**"
+      - ".github/workflows/ntm-persistent-research-branches.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  persistent-branch-contract:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: prototypes/equities-research-cognition
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - name: Compile local workspace and hostile tests
+        run: >-
+          python -W error -m compileall -q
+          research_workspace
+          scenarios/adversarial/test_ntm_persistent_research_branch.py
+          scenarios/adversarial/test_ntm_branch_policy.py
+          scenarios/adversarial/test_ntm_branch_protocol.py
+      - name: Run persistent NTM branch hostile tests
+        run: >-
+          python -W error -m unittest -v
+          scenarios.adversarial.test_ntm_persistent_research_branch
+          scenarios.adversarial.test_ntm_branch_policy
+          scenarios.adversarial.test_ntm_branch_protocol
+      - name: Enforce runtime boundary
+        run: python tools/check_boundary.py
+      - name: Classify package lines
+        run: python tools/classify_loc.py

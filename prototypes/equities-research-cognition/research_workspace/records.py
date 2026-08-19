@@ -17,6 +17,13 @@ SUPPORTED_KINDS = {
     "evidence_decision",
     "method",
     "context",
+    "research_branch",
+    "ntm_binding",
+    "branch_instruction",
+    "branch_event",
+    "branch_ack",
+    "branch_checkpoint",
+    "source_request",
     "run",
     "claim",
     "result",
@@ -39,6 +46,12 @@ def _optional_text(payload: dict[str, Any], key: str) -> None:
     value = payload.get(key)
     if value is not None:
         require_text(value, key)
+
+
+def _require_positive_int(value: Any, label: str) -> int:
+    if not isinstance(value, int) or value < 1:
+        raise ValidationError(f"{label} must be a positive integer")
+    return value
 
 
 def validate_payload(kind: str, payload: dict[str, Any]) -> dict[str, Any]:
@@ -146,6 +159,98 @@ def validate_payload(kind: str, payload: dict[str, Any]) -> dict[str, Any]:
         require_string_list(payload.get("allowed_tools", []), "context tools", allow_empty=True)
         require_text(payload.get("relative_directory"), "context directory")
         require_text(payload.get("manifest_digest"), "context manifest digest")
+
+    elif kind == "research_branch":
+        require_text(payload.get("episode_id"), "branch episode")
+        require_text(payload.get("commission_id"), "branch commission")
+        require_text(payload.get("method_id"), "branch method")
+        if payload.get("branch_kind") not in {"lead", "research", "challenge", "artifact", "rederivation"}:
+            raise ValidationError("branch kind is unsupported")
+        require_text(payload.get("title"), "branch title")
+        require_text(payload.get("question"), "branch question")
+        require_string_list(payload.get("expected_outputs", []), "branch expected outputs")
+        require_text(payload.get("authority_ceiling"), "branch authority ceiling")
+        require_text(payload.get("created_by"), "branch creator")
+        require_string_list(payload.get("context_ids", []), "branch contexts", allow_empty=True)
+        require_string_list(payload.get("input_object_ids", []), "branch input objects", allow_empty=True)
+        _optional_text(payload, "parent_branch_id")
+
+    elif kind == "ntm_binding":
+        require_text(payload.get("branch_id"), "binding branch")
+        require_text(payload.get("session"), "binding session")
+        _require_positive_int(payload.get("pane"), "binding pane")
+        require_text(payload.get("role_name"), "binding role")
+        require_text(payload.get("model"), "binding model")
+        require_text(payload.get("config_path"), "binding config path")
+        require_text(payload.get("config_digest"), "binding config digest")
+        require_text(payload.get("working_directory"), "binding working directory")
+        require_text(payload.get("attempt_manifest_digest"), "binding attempt manifest digest")
+        require_string_list(payload.get("context_ids", []), "binding contexts", allow_empty=True)
+        _optional_text(payload, "predecessor_binding_id")
+        _optional_text(payload, "resume_checkpoint_id")
+
+    elif kind == "branch_instruction":
+        require_text(payload.get("branch_id"), "instruction branch")
+        require_text(payload.get("binding_id"), "instruction binding")
+        _require_positive_int(payload.get("sequence"), "instruction sequence")
+        if payload.get("instruction_kind") not in {
+            "start", "resume", "context_delta", "steer", "challenge", "complete_request"
+        }:
+            raise ValidationError("branch instruction kind is unsupported")
+        require_text(payload.get("actor"), "instruction actor")
+        require_text(payload.get("message_path"), "instruction message path")
+        require_text(payload.get("message_digest"), "instruction message digest")
+        require_string_list(payload.get("context_ids", []), "instruction contexts", allow_empty=True)
+        _optional_text(payload, "checkpoint_id")
+
+    elif kind == "branch_event":
+        require_text(payload.get("branch_id"), "event branch")
+        require_text(payload.get("event_kind"), "branch event kind")
+        require_text(payload.get("actor"), "branch event actor")
+        _require_dict(payload.get("details", {}), "branch event details")
+        _optional_text(payload, "binding_id")
+        _optional_text(payload, "instruction_id")
+
+    elif kind == "branch_ack":
+        require_text(payload.get("branch_id"), "acknowledgement branch")
+        require_text(payload.get("binding_id"), "acknowledgement binding")
+        require_text(payload.get("instruction_id"), "acknowledgement instruction")
+        require_text(payload.get("instruction_digest"), "acknowledgement instruction digest")
+        require_string_list(payload.get("context_ids", []), "acknowledgement contexts", allow_empty=True)
+        require_text(payload.get("authority_ceiling"), "acknowledgement authority ceiling")
+        _require_dict(payload.get("worker", {}), "acknowledgement worker")
+        require_text(payload.get("protocol_version"), "acknowledgement protocol version")
+
+    elif kind == "branch_checkpoint":
+        require_text(payload.get("branch_id"), "checkpoint branch")
+        require_text(payload.get("binding_id"), "checkpoint binding")
+        _require_positive_int(payload.get("sequence"), "checkpoint sequence")
+        _optional_text(payload, "predecessor_id")
+        _optional_text(payload, "acknowledgement_id")
+        if not isinstance(payload.get("candidate_claims", []), list):
+            raise ValidationError("checkpoint candidate claims must be a list")
+        if not isinstance(payload.get("rivals", []), list):
+            raise ValidationError("checkpoint rivals must be a list")
+        require_string_list(payload.get("source_request_ids", []), "checkpoint source requests", allow_empty=True)
+        if not isinstance(payload.get("artifact_proposals", []), list):
+            raise ValidationError("checkpoint artifact proposals must be a list")
+        require_string_list(payload.get("unresolved_questions", []), "checkpoint unresolved questions", allow_empty=True)
+        if payload.get("disposition") not in {"continue", "complete", "refuse", "blocked"}:
+            raise ValidationError("checkpoint disposition is unsupported")
+        _optional_text(payload, "next_action")
+        _optional_text(payload, "refusal")
+
+    elif kind == "source_request":
+        require_text(payload.get("branch_id"), "source request branch")
+        require_text(payload.get("binding_id"), "source request binding")
+        require_text(payload.get("external_request_id"), "external source request id")
+        require_text(payload.get("request_kind"), "source request kind")
+        require_text(payload.get("locator"), "source request locator")
+        require_text(payload.get("source_class"), "source request class")
+        require_text(payload.get("purpose"), "source request purpose")
+        require_text(payload.get("rationale"), "source request rationale")
+        require_string_list(payload.get("professional_object_ids", []), "source request objects", allow_empty=True)
+        _require_dict(payload.get("rights_needed", {}), "source request rights")
 
     elif kind == "run":
         require_text(payload.get("context_id"), "run context")

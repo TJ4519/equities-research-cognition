@@ -1,0 +1,47 @@
+name: NTM research topology
+
+on:
+  push:
+    branches:
+      - agent/ntm-persistent-research-branches-v0
+  pull_request:
+    paths:
+      - "prototypes/equities-research-cognition/research_workspace/**"
+      - "prototypes/equities-research-cognition/agents/persistent_research_branch/**"
+      - "prototypes/equities-research-cognition/scenarios/adversarial/test_ntm_discovery_support_challenge.py"
+      - "prototypes/equities-research-cognition/scenarios/adversarial/test_ntm_codex_launch_authority.py"
+      - "prototypes/equities-research-cognition/tools/**"
+      - ".github/workflows/ntm-persistent-research-topology.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  discovery-support-challenge:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: prototypes/equities-research-cognition
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - name: Compile joined research topology
+        run: >-
+          python -W error -m compileall -q
+          research_workspace
+          scenarios/adversarial/test_ntm_discovery_support_challenge.py
+          scenarios/adversarial/test_ntm_codex_launch_authority.py
+      - name: Run joined topology and launch-authority tests
+        run: >-
+          python -W error -m unittest -v
+          scenarios.adversarial.test_ntm_discovery_support_challenge
+          scenarios.adversarial.test_ntm_codex_launch_authority
+      - name: Enforce runtime boundary
+        run: python tools/check_boundary.py
+      - name: Classify package lines
+        run: python tools/classify_loc.py

@@ -24,6 +24,20 @@ ARCHITECTURE_REVIEW_MARKERS = (
     "role-kind/role-instance/obligation separation",
     "baseline/intervention comparison",
 )
+BINARY_SUFFIXES = {
+    ".bin",
+    ".gif",
+    ".jpeg",
+    ".jpg",
+    ".pdf",
+    ".png",
+    ".webp",
+    ".xls",
+    ".xlsb",
+    ".xlsm",
+    ".xlsx",
+    ".zip",
+}
 
 
 def category(path: Path) -> str:
@@ -36,10 +50,16 @@ def category(path: Path) -> str:
         or path.suffix == ".pyc"
     ):
         return "generated"
+    if path.suffix.casefold() in BINARY_SUFFIXES:
+        if relative.startswith("scenarios/") or relative.startswith("product/fixtures/"):
+            return "binary_fixture"
+        return "binary_data"
     if relative.startswith("product/") and "/migrations/" in relative:
         return "schema"
     if relative.startswith("scenarios/"):
         return "tests"
+    if relative.startswith("spikes/"):
+        return "spike_code"
     if (
         relative
         in {
@@ -86,6 +106,7 @@ def classify() -> dict[str, object]:
     paths = [path for path in ROOT.rglob("*") if path.is_file()]
     rows = []
     totals: dict[str, int] = defaultdict(int)
+    bytes_by_category: dict[str, int] = defaultdict(int)
     third_party_files = third_party_bytes = 0
     for path in sorted(set(paths)):
         if ROOT / ".venv" in path.parents:
@@ -94,20 +115,27 @@ def classify() -> dict[str, object]:
             continue
         require_regular_surface(path)
         kind = category(path)
-        lines = 0 if kind == "generated" else text_lines(path)
+        size = path.stat().st_size
+        lines = (
+            0
+            if kind in {"generated", "binary_fixture", "binary_data"}
+            else text_lines(path)
+        )
         rows.append(
             {
                 "path": path.relative_to(ROOT).as_posix(),
                 "category": kind,
                 "physical_lines": lines,
+                "physical_bytes": size,
             }
         )
         totals[kind] += lines
+        bytes_by_category[kind] += size
     shipped = sum(
         totals[name]
         for name in ("operational_code", "schema", "support_code", "docs_data")
     )
-    reviewed = shipped + totals["tests"]
+    reviewed = shipped + totals["tests"] + totals["spike_code"]
     architecture_review_required = (
         totals["operational_code"] > OPERATIONAL_CODE_REVIEW_THRESHOLD
     )
@@ -124,6 +152,7 @@ def classify() -> dict[str, object]:
             "shipped_product": SHIPPED_PRODUCT_PRESSURE,
         },
         "totals": dict(sorted(totals.items())),
+        "bytes_by_category": dict(sorted(bytes_by_category.items())),
         "shipped_product_total": shipped,
         "shipped_product_pressure_exceeded": shipped > SHIPPED_PRODUCT_PRESSURE,
         "architecture_review_required": architecture_review_required,
@@ -133,10 +162,24 @@ def classify() -> dict[str, object]:
             ).as_posix(),
             "recorded": architecture_review_recorded,
         },
-        "reviewed_with_tests_total": reviewed,
+        "reviewed_with_tests_and_spikes_total": reviewed,
         "runtime_and_schema_total": (
             totals["operational_code"] + totals["schema"]
         ),
+        "binary_surfaces": {
+            "fixture_files": sum(
+                row["category"] == "binary_fixture" for row in rows
+            ),
+            "fixture_bytes": bytes_by_category["binary_fixture"],
+            "data_files": sum(row["category"] == "binary_data" for row in rows),
+            "data_bytes": bytes_by_category["binary_data"],
+            "counted_as_text_lines": False,
+        },
+        "spikes": {
+            "physical_lines": totals["spike_code"],
+            "physical_bytes": bytes_by_category["spike_code"],
+            "counted_as_shipped_product": False,
+        },
         "third_party_environment": {
             "files": third_party_files,
             "bytes": third_party_bytes,
