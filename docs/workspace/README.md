@@ -1,91 +1,63 @@
 # Local-first research workspace
 
-Status: plan space. No product implementation is authorised by this directory.
+Status: V0 implementation is active on `agent/local-workspace-vertical-v0`. The parent planning branch remains available in draft PR 13.
 
-Branch basis: `agent/pro-grounding` at `968a03608f49c04e890e26c2cb2e8b4890920283`.
+The product under test is a local-first research workspace inhabited by persistent Codex sessions created and managed through NTM. The analyst states professional work in ordinary language. Skills help Codex recover prior work, propose an interpretation, assemble exact context, invoke supported methods, create artifacts, accept correction, and resume later. A local service owns source identity, exact bytes, context construction, durable relations, permissions, artifact ancestry, and replay.
 
-The proposed product is a local-first research workspace that a capable terminal agent can inhabit. The analyst states a professional request in ordinary language. Installed skills help the agent recover prior work, propose an interpretation, assemble exact context, choose supported methods, create native artifacts, accept correction, and resume later. A local service owns source identity, exact bytes, context construction, durable relations, permissions, and replay. An optional shared service may later add teams, licensed connectors, schedules, evaluation runs, and controlled method release.
-
-The existing Django application remains useful lower machinery. It already preserves authenticated ownership, exact inputs, work orders, provisional outputs, stored artifacts, human actions, and restart history. Its campaign pages, NTM controls, and research-state language do not define the new product.
-
-## Why this branch exists
-
-The programme narrowed around one workbook source check before the product had been understood. The Micron equal-value example remains important because it shows how a prohibited evidential route can pass a numerical check. It should become one protected replay case inside a broader research workspace, rather than the visible centre of the product.
-
-One sophisticated practitioner described useful agent work across model building, model updates, model adjustments, earnings work, statistical analysis, visual explanation, thesis checking, management comparison, monitoring, and institutional memory. The evidence supports a programmable research environment. It does not support a fixed list of product modules or one universal analyst workflow.
+The existing Django application remains useful prior machinery. Its campaigns, Casebook, and research-state language do not define the workspace. NTM remains the runtime that instantiates and preserves Codex research sessions.
 
 ## Reading order
 
-1. `FOUNDATION.md` states the product thesis, commercial claim, and boundaries.
-2. `CONCEPTUAL_MODEL.md` defines the durable objects and relations beneath terminal and web views.
-3. `INFERENCE_STATE_REPLAY.md` defines re-derivation, audit, and counterfactual replay.
-4. `LOCAL_FIRST_ARCHITECTURE.md` describes the workspace, local service, skills, context builder, runtimes, artifacts, and optional shared service.
-5. `COUNTERFACTUALS.md` attacks the design through rival products and research episodes.
-6. `MASTER_PLAN.md` adapts the Agentic Flywheel method to this project and names the gates before code work begins.
+1. `FOUNDATION.md` states the product and commercial thesis.
+2. `CONCEPTUAL_MODEL.md` defines the durable relations beneath terminal and web views.
+3. `INFERENCE_STATE_REPLAY.md` defines re-derivation and counterfactual comparison.
+4. `NTM_CODEX_RUNTIME.md` defines the persistent Codex research runtime and prohibits `codex exec`.
+5. `LOCAL_FIRST_ARCHITECTURE.md` describes the intended local and shared system.
+6. `COUNTERFACTUALS.md` attacks the design through rival products and research cases.
+7. `MASTER_PLAN.md` records the active end-to-end build sequence.
+8. `IMPLEMENTATION_STATUS.md` states what the joined V0 proves and does not prove.
 
-## Present decision
+## Implemented vertical
 
-The project remains in plan space.
+The first vertical now joins:
 
-The Agentic Flywheel separates plan space, task-graph space, and code space. The present questions still concern the nature of the product, the authority model, context construction, source rights, replay, memory, native artifacts, and the boundary between local and hosted software. Turning those questions into implementation work now would preserve unresolved guesses in more expensive form.
+```text
+workspace and mandate
+-> prior perspective
+-> original request and confirmed commission
+-> exact local sources and separate assertions
+-> human-confirmed professional objects
+-> purpose-specific evidence decisions
+-> sealed assertion-level context
+-> deterministic conformance process
+-> host-validated claims and cited artifact
+-> scoped use decision
+-> correction and confirmed memory
+-> second episode
+-> evaluation case
+-> deterministic replay and proof pack
+```
 
-Exploratory code may later test one isolated capability. An exploratory result may kill or narrow a design claim. It may not silently choose the product architecture.
+The Micron equal-value case appears inside the path. The earnings-release assertion is rejected for the historical revenue object and admitted for management-language comparison. Equal values do not merge the evidential routes.
 
-## Working product claim
+## Present boundary
 
-The analyst should be able to open an approved terminal agent inside a configured workspace and state a broad professional request. The system should:
+The local process adapter binds a known executable to one exact context directory, a minimal environment, a timeout, and a host-validated output population. It is a deterministic conformance runner. It is not an alternative Codex runtime and must not launch Codex.
 
-- preserve the exact request;
-- propose its interpretation and expose material uncertainty;
-- recover the prior artifacts, confirmed meanings, open questions, and decisions relevant to the request;
-- capture exact source material and source rights;
-- construct a separate declared context for each piece of model work;
-- invoke supported research and artifact methods through skills;
-- return useful work and the few matters that still require judgment;
-- let the analyst correct the current result without restarting the whole undertaking;
-- re-derive why a claim, value, or artifact was permitted from durable records rather than a terminal transcript; and
-- preserve corrected episodes for later comparison before changing live behaviour.
+Codex research runs in persistent NTM-managed sessions. The host should bind each durable research branch to an NTM session and pane, send exact context and instructions, receive semantic acknowledgements and checkpoints, and take custody of typed results. NTM reporting `complete` does not by itself complete professional work.
 
-A web application may later render the same state for teams. The web application is a view over the workspace, not the first source of product truth.
+A support context contains exact admitted assertion extracts and source receipts. It does not contain full source bytes. Full-document discovery requires a separate permission and context.
 
-## Product boundaries
+The reference method is deterministic. It proves context, result, artifact, correction, memory, and replay mechanics. It does not prove useful Codex research.
 
-The terminal agent may interpret, propose, search, calculate, compare, challenge, and create candidates.
+## Next integrated build
 
-The local service owns exact source capture, object identity, content hashes, context manifests, permissions, legal state changes, artifact ancestry, and durable chronology.
+The next build should join the new local authority layer to the existing NTM-managed persistent Codex architecture.
 
-The analyst or an authorised policy owns contested professional meaning, methods, assumptions, materiality, and permission to rely upon one exact result for one stated use.
+It should create durable research branches, bind them to NTM sessions and panes, send sealed starting contexts, accept host-mediated source additions, record branch checkpoints, run fresh NTM-managed challenge sessions where warranted, and collect typed results through the existing authority checks.
 
-A skill teaches a repeatable procedure. A Pydantic model checks the shape of data crossing a boundary. Neither grants professional authority.
+No `codex exec` route is permitted. Model-mediated replay must use a fresh NTM-managed Codex session. The deterministic process runner remains available only for fixture and conformance work.
 
-Langfuse may explain model calls, tools, latency, cost, and execution errors. It cannot prove source identity, lawful access, exact context exclusion, faithful spreadsheet calculation, or analyst approval.
+The first useful native artifact action should follow observed analyst work. A reproducible calculation or amendment to a prior research note may prove value sooner than a full Excel integration.
 
-## Things this branch must not assume
-
-- A company page is the universal entrance to research work.
-- A deep-research report is the universal output.
-- Excel is the product ontology.
-- Persistent terminal sessions are the durable memory.
-- More agent roles improve research.
-- A source can be admitted or rejected for every purpose at once.
-- A model-written summary may enter future context as accepted fact.
-- One corrected Micron episode proves a reusable source rule.
-- Exact traces make an output professionally trustworthy.
-- A hosted SaaS interface should precede evidence of repeated use.
-
-## Conditions before implementation planning
-
-The foundation may move into task-graph work only when fresh reviews no longer change the following matters substantially:
-
-- the product claim and first user;
-- the durable objects and authority relations;
-- the exact meaning of inference-state replay;
-- the local and hosted boundary;
-- the context-construction model;
-- the first supported methods and artifact actions;
-- the privacy, entitlement, and retention model;
-- the first two historical episodes used to test continuity;
-- the commercial measures; and
-- the parts of the existing repository to retain, isolate, or replace.
-
-The transition should be explicit. A beautiful plan does not become executable work merely because it is long.
+A shared SaaS service remains deferred until repeated local use establishes a need for team identity, licensed connectors, schedules, synchronisation, and controlled method release.

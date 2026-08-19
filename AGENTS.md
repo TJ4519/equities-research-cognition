@@ -4,41 +4,60 @@ Read `PRO_RESPONSIBILITY_PROMPT.md`, `DEMO_COMMISSION.md`, `ROUTE.md`, and
 `prototypes/equities-research-cognition/AGENTS.md` before proposing or changing
 the product.
 
-`PRO_RESPONSIBILITY_PROMPT.md` is the governing public handoff for the
-long-context product owner. The Agentic SDLC applicability brief is optional
-and downstream: do not read it before recovering product intent and repository
-truth as required by that prompt.
+`PRO_RESPONSIBILITY_PROMPT.md` remains the governing public handoff for the
+long-context product owner. The Agentic SDLC applicability brief remains a donor
+inquiry rather than product authority.
 
-The active local-first product rethink lives under `docs/workspace/`. Read
-`docs/workspace/README.md` and its nested `AGENTS.md` before revising that work.
-The directory remains in plan space. Do not turn it into implementation tasks or
-code until its status changes explicitly.
+The local-first product foundation lives under `docs/workspace/`. Read
+`docs/workspace/README.md`, `docs/workspace/IMPLEMENTATION_STATUS.md`, and its
+nested `AGENTS.md` before changing the workspace. The planning branch remains
+separately reviewable. This branch authorises only the joined V0 vertical named
+in those files.
 
-This repository exposes a current implementation substrate and a desired
-product direction. Do not collapse them. Existing Django models, NTM panes,
-role protocols, Langfuse traces, tests, or routes are not evidence that the
-analyst product is complete or well designed.
+This repository contains both an inherited Django/PostgreSQL execution substrate
+and a new local workspace kernel. Do not collapse them. The Django campaigns,
+NTM panes, Casebook, role protocols, Langfuse traces, local object records, test
+fixtures, or command-line interfaces are not evidence that analysts find the
+product useful.
 
-When asked to design a demo, work backwards from the analyst's consequential
-job and the exact artifact they must trust. Treat agent decomposition as a
-debuggable execution structure, not as visible panes or invented analyst
-terminology. The interface may be rich, but every visible object and action
-must correspond to ordinary analyst work or a necessary decision.
+The V0 vertical must remain recognisable end to end:
 
-No analyst-facing design may use eyebrows, overlines, kickers, supratitles, or
-small categorical labels above headings. Do not expose backend ontology as the
-user's workflow. Do not assume that rejecting jargon implies a thin product.
+```text
+exact prior perspective and request
+-> confirmed commission
+-> exact sources and separate assertions
+-> purpose-specific evidence decisions
+-> sealed assertion-level context
+-> known child process and exact output population
+-> host-validated claims and artifacts
+-> scoped human use, correction, and memory
+-> later episode and inference-state replay
+```
+
+The analyst's request may remain broad. Each machine action must use one exact
+context and one supported result contract. More agent roles are not a product
+feature.
 
 Keep these boundaries explicit:
 
-- models propose research, calculations, and candidate artifacts;
-- deterministic software owns identity, exact bytes, versions, permissions,
-  known predicates, legal transitions, and fail-closed checks;
-- analysts own contested meaning, materiality, corrections, and permission to
-  rely on a result;
-- a candidate never becomes authority merely because an agent completed it;
-- mechanical tests do not prove cognition, research quality, or adoption.
+- terminal agents interpret, propose, search, compare, calculate, challenge, and
+  create candidates;
+- the local service owns identity, exact bytes, context populations, artifact
+  ancestry, grants, legal state changes, and durable chronology;
+- analysts or authorised policies own contested meaning, methods, assumptions,
+  materiality, and permission to rely on one exact result;
+- skills teach repeatable procedures but cannot grant authority;
+- schemas validate boundary shape but cannot make a model proposal true;
+- Langfuse explains execution but cannot establish professional authority;
+- a candidate never becomes authority merely because a process completed; and
+- mechanical tests do not prove cognition, research quality, reduced review, or
+  adoption.
 
-Do not commit credentials, `.env` files, runtime state, protected research,
-private transcripts, operator paths, or service-issued identifiers. Use the
-commands in the package instructions for verification.
+No analyst-facing design may expose backend object names, process controls, or
+agent topology as the work itself. No page may imply source legality, context
+exclusion, calculation fidelity, analyst approval, or method promotion before
+the corresponding record and test exist.
+
+Do not commit credentials, `.env` files, runtime state, retained licensed
+material, protected research, private transcripts, operator paths, or
+service-issued identifiers. Use public or synthetic fixtures in the repository.

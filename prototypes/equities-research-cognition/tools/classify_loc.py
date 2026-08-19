@@ -65,6 +65,7 @@ def category(path: Path) -> str:
         or relative == "pyproject.toml"
         or relative.startswith("product/")
         or relative.startswith("harness/")
+        or relative.startswith("research_workspace/")
         or relative.startswith("agents/")
         or relative.startswith("workbenches/")
     ):
