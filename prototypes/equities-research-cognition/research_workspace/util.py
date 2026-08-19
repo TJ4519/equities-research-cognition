@@ -24,6 +24,7 @@ PREFIXES = {
     "method": "mth",
     "context": "ctx",
     "research_branch": "brn",
+    "codex_launch": "cdx",
     "ntm_binding": "ntb",
     "branch_instruction": "bin",
     "branch_event": "bev",
