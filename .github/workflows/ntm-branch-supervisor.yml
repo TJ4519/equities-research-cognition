@@ -1,0 +1,44 @@
+name: NTM branch supervisor
+
+on:
+  push:
+    branches:
+      - agent/ntm-persistent-research-branches-v0
+  pull_request:
+    paths:
+      - "prototypes/equities-research-cognition/research_workspace/branch_supervisor.py"
+      - "prototypes/equities-research-cognition/research_workspace/supervisor_cli.py"
+      - "prototypes/equities-research-cognition/scenarios/adversarial/test_ntm_branch_supervisor.py"
+      - "prototypes/equities-research-cognition/research_workspace/**"
+      - ".github/workflows/ntm-branch-supervisor.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  host-session-receipts:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: prototypes/equities-research-cognition
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - name: Compile supervisor and hostile test
+        run: >-
+          python -W error -m compileall -q
+          research_workspace
+          scenarios/adversarial/test_ntm_branch_supervisor.py
+      - name: Run supervisor receipt tests
+        run: >-
+          python -W error -m unittest -v
+          scenarios.adversarial.test_ntm_branch_supervisor
+      - name: Enforce runtime boundary
+        run: python tools/check_boundary.py
+      - name: Classify package lines
+        run: python tools/classify_loc.py
